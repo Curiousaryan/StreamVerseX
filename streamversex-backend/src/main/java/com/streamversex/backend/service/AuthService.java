@@ -7,6 +7,7 @@ import com.streamversex.backend.dto.request.RegisterRequestDTO;
 import com.streamversex.backend.dto.request.ResetPasswordRequestDTO;
 import com.streamversex.backend.dto.response.AuthResponseDTO;
 import com.streamversex.backend.dto.response.MessageResponseDTO;
+import com.streamversex.backend.dto.response.MovieCreditsResponseDTO;
 
 public interface AuthService {
 	
@@ -23,4 +24,5 @@ public interface AuthService {
 	    MessageResponseDTO changePassword(
 	            String userId,
 	            ChangePasswordRequestDTO request);
+	    
 }
