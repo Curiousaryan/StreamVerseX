@@ -1,0 +1,25 @@
+package com.streamversex.backend.externalapi.tmdb.dto;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class TmdbNetworkDTO {
+
+    private Long id;
+
+    private String name;
+
+    @JsonProperty("logo_path")
+    private String logoPath;
+
+    @JsonProperty("origin_country")
+    private String originCountry;
+}
