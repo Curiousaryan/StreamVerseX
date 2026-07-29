@@ -141,4 +141,72 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.badRequest().body(error);
     }
+    
+    @ExceptionHandler(FavoriteAlreadyExistsException.class)
+    public ResponseEntity<ApiErrorDTO> handleFavoriteAlreadyExists(
+            FavoriteAlreadyExistsException ex,
+            HttpServletRequest request) {
+
+    	ApiErrorDTO error = ApiErrorDTO.builder()
+                .timestamp(Instant.now())
+                .status(HttpStatus.CONFLICT.value())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(error);
+    }
+    
+    @ExceptionHandler(FavoriteNotFoundException.class)
+    public ResponseEntity<ApiErrorDTO> handleFavoriteNotFound(
+            FavoriteNotFoundException ex,
+            HttpServletRequest request) {
+
+        ApiErrorDTO error = ApiErrorDTO.builder()
+                .timestamp(Instant.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(error);
+    }
+    
+    @ExceptionHandler(WatchlistAlreadyExistsException.class)
+    public ResponseEntity<ApiErrorDTO> handleWatchlistAlreadyExists(
+            WatchlistAlreadyExistsException ex,
+            HttpServletRequest request) {
+
+        ApiErrorDTO error = ApiErrorDTO.builder()
+                .timestamp(Instant.now())
+                .status(HttpStatus.CONFLICT.value())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(error);
+    }
+    
+    @ExceptionHandler(WatchlistNotFoundException.class)
+    public ResponseEntity<ApiErrorDTO> handleWatchlistNotFound(
+            WatchlistNotFoundException ex,
+            HttpServletRequest request) {
+
+        ApiErrorDTO error = ApiErrorDTO.builder()
+                .timestamp(Instant.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(error);
+    }
 }
