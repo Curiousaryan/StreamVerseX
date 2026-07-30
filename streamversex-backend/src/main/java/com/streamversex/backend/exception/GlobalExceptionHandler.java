@@ -209,4 +209,72 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.NOT_FOUND)
                 .body(error);
     }
+    
+    @ExceptionHandler(ReviewAlreadyExistsException.class)
+    public ResponseEntity<ApiErrorDTO> handleReviewAlreadyExists(
+            ReviewAlreadyExistsException ex,
+            HttpServletRequest request) {
+
+        ApiErrorDTO error = ApiErrorDTO.builder()
+                .timestamp(Instant.now())
+                .status(HttpStatus.CONFLICT.value())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(error);
+    }
+    
+    @ExceptionHandler(ReviewNotFoundException.class)
+    public ResponseEntity<ApiErrorDTO> handleReviewNotFound(
+            ReviewNotFoundException ex,
+            HttpServletRequest request) {
+
+        ApiErrorDTO error = ApiErrorDTO.builder()
+                .timestamp(Instant.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(error);
+    }
+    
+    @ExceptionHandler(ReviewAccessDeniedException.class)
+    public ResponseEntity<ApiErrorDTO> handleReviewAccessDenied(
+            ReviewAccessDeniedException ex,
+            HttpServletRequest request) {
+
+        ApiErrorDTO error = ApiErrorDTO.builder()
+                .timestamp(Instant.now())
+                .status(HttpStatus.FORBIDDEN.value())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(error);
+    }
+    
+    @ExceptionHandler(ProfileNotFoundException.class)
+    public ResponseEntity<ApiErrorDTO> handleProfileNotFound(
+            ProfileNotFoundException ex,
+            HttpServletRequest request) {
+
+        ApiErrorDTO error = ApiErrorDTO.builder()
+                .timestamp(Instant.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(error);
+    }
 }
