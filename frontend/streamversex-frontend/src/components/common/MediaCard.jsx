@@ -1,106 +1,116 @@
+import { Play, Plus, Star } from "lucide-react";
+
 function MediaCard({
   title,
   image,
-  year,
   rating,
-  type = "Movie",
+  year,
+  mediaType,
+  onClick,
+  onAddWatchlist,
 }) {
+  const handleWatchlist = (event) => {
+    event.stopPropagation();
+
+    if (onAddWatchlist) {
+      onAddWatchlist();
+    }
+  };
+
   return (
     <article
-      className="
-        group relative
-        w-[clamp(140px,16vw,220px)]
-        shrink-0 cursor-pointer
-      "
+      onClick={onClick}
+      className="group w-full cursor-pointer"
     >
       {/* Poster */}
-      <div
-        className="
-          relative aspect-[2/3]
-          overflow-hidden rounded-lg
-          bg-zinc-900
-        "
-      >
-        <img
-          src={image}
-          alt={title}
-          loading="lazy"
-          className="
-            h-full w-full object-cover
-            transition-transform
-            duration-500
-            ease-out
-            group-hover:scale-105
-          "
-        />
+      <div className="relative aspect-[2/3] overflow-hidden rounded-lg bg-zinc-900">
 
-        {/* Hover overlay */}
-        <div
-          className="
-            absolute inset-0
-            bg-gradient-to-t
-            from-black/90
-            via-black/10
-            to-transparent
-            opacity-70
-            transition-opacity
-            duration-300
-            group-hover:opacity-100
-          "
-        />
+        {image ? (
+          <img
+            src={image}
+            alt={title || "Media poster"}
+            loading="lazy"
+            className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center px-4 text-center text-sm text-gray-500">
+            No image available
+          </div>
+        )}
 
-        {/* Rating */}
-        <div
-          className="
-            absolute right-2 top-2
-            rounded-md
-            bg-black/70
-            px-2 py-1
-            text-xs font-bold
-            text-white
-            backdrop-blur-md
-          "
-        >
-          ★ {rating}
-        </div>
+        {/* Dark hover overlay */}
+        <div className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 transition duration-300 group-hover:opacity-100">
 
-        {/* Information */}
-        <div
-          className="
-            absolute inset-x-0 bottom-0
-            translate-y-1
-            p-3
-            transition-transform
-            duration-300
-            group-hover:translate-y-0
-          "
-        >
-          <h3
-            className="
-              line-clamp-2
-              text-sm font-bold
-              leading-tight
-              text-white
-              sm:text-base
-            "
-          >
-            {title}
-          </h3>
+          <div className="flex items-center gap-3">
 
-          <div
-            className="
-              mt-1.5 flex items-center
-              gap-2 text-xs
-              text-white/65
-            "
-          >
-            <span>{year}</span>
+            <button
+              type="button"
+              onClick={onClick}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black transition hover:scale-110"
+              aria-label={`View ${title || "media"}`}
+            >
+              <Play size={18} fill="currentColor" />
+            </button>
 
-            <span className="h-1 w-1 rounded-full bg-white/40" />
+            <button
+              type="button"
+              onClick={handleWatchlist}
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-black/60 text-white transition hover:bg-white hover:text-black"
+              aria-label={`Add ${title || "media"} to watchlist`}
+            >
+              <Plus size={20} />
+            </button>
 
-            <span>{type}</span>
           </div>
         </div>
+
+        {/* Media type */}
+        {mediaType && (
+          <span className="absolute left-2 top-2 rounded bg-black/75 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
+            {mediaType}
+          </span>
+        )}
+
+        {/* Rating */}
+        {rating !== undefined && rating !== null && (
+          <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded bg-black/80 px-2 py-1 text-xs font-medium text-white">
+            <Star
+              size={12}
+              className="text-yellow-400"
+              fill="currentColor"
+            />
+
+            <span>{rating}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Information */}
+      <div className="pt-3">
+
+        <h3
+          className="truncate text-sm font-semibold text-white transition group-hover:text-red-500"
+          title={title}
+        >
+          {title || "Untitled"}
+        </h3>
+
+        <div className="mt-1 flex items-center gap-2 text-xs text-gray-500">
+
+          {year && <span>{year}</span>}
+
+          {year && mediaType && (
+            <span>•</span>
+          )}
+
+          {mediaType && (
+            <span className="capitalize">
+              {mediaType}
+            </span>
+          )}
+
+        </div>
+
       </div>
     </article>
   );
