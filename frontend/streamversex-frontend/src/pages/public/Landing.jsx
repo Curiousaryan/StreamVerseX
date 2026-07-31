@@ -4,7 +4,7 @@ import TrendingPreview from "../../components/landing/TrendingPreview";
 import EntertainmentShowcase from "../../components/landing/EntertainmentShowcase";
 import AIDiscoverySection from "../../components/landing/AIDiscoverySection";
 import PersonalHubSection from "../../components/landing/PersonalHubSection";
-import PremiumSection from "../../components/landing/PremiumSection,";
+import PremiumSection from "../../components/landing/PremiumSection";
 import FinalCTASection from "../../components/landing/FinalCTASection";
 import LandingFooter from "../../components/landing/LandingFooter";
 
