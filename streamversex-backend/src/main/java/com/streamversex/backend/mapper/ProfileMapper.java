@@ -17,6 +17,15 @@ public class ProfileMapper {
                 .profileImageUrl(user.getProfileImageUrl())
                 .emailVerified(user.isEmailVerified())
                 .premium(user.isPremium())
+
+                // ==================== SUBSCRIPTION ====================
+
+                .subscriptionPlan(user.getSubscriptionPlan())
+                .subscriptionStartedAt(user.getSubscriptionStartedAt())
+                .subscriptionExpiresAt(user.getSubscriptionExpiresAt())
+
+                // ==================== TIMESTAMPS ====================
+
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
                 .build();

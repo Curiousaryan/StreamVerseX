@@ -1,10 +1,15 @@
 package com.streamversex.backend.email;
 
+import java.io.ByteArrayInputStream;
+
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamSource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -85,6 +90,125 @@ public class EmailServiceImpl implements EmailService {
 	        mailSender.send(message);
 	    } catch (Exception ex) {
 	        throw new RuntimeException("Failed to send password reset email.", ex);
+	    }
+	}
+	
+	
+	@Override
+	public void sendInvoiceEmail(
+	        String toEmail,
+	        String customerName,
+	        String invoiceNumber,
+	        byte[] pdfBytes) {
+
+	    try {
+
+	        MimeMessage mimeMessage =
+	                mailSender.createMimeMessage();
+
+	        MimeMessageHelper helper =
+	                new MimeMessageHelper(
+	                        mimeMessage,
+	                        true
+	                );
+
+	        helper.setFrom(fromEmail);
+	        helper.setTo(toEmail);
+
+	        helper.setSubject(
+	                "Your StreamVerseX Invoice"
+	        );
+
+	        helper.setText(
+	                """
+	                Hello %s,
+
+	                Thank you for subscribing to StreamVerseX Premium.
+
+	                Your payment was successful.
+
+	                Invoice Number:
+	                %s
+
+	                Your invoice is attached as a PDF.
+
+	                Enjoy premium streaming!
+
+	                Regards,
+	                StreamVerseX Team
+	                """
+	                .formatted(
+	                        customerName,
+	                        invoiceNumber
+	                )
+	        );
+
+	        helper.addAttachment(
+	                "Invoice-" + invoiceNumber + ".pdf",
+	                new InputStreamSource() {
+
+	                    @Override
+	                    public java.io.InputStream getInputStream() {
+	                        return new ByteArrayInputStream(pdfBytes);
+	                    }
+	                }
+	        );
+
+	        mailSender.send(mimeMessage);
+
+	    } catch (Exception ex) {
+
+	        throw new RuntimeException(
+	                "Failed to send invoice email.",
+	                ex
+	        );
+	    }
+	}
+	
+	
+	@Override
+	public void sendSubscriptionExpiredEmail(
+	        String toEmail,
+	        String customerName) {
+
+	    SimpleMailMessage message = new SimpleMailMessage();
+
+	    message.setFrom(fromEmail);
+	    message.setTo(toEmail);
+
+	    message.setSubject("Your StreamVerseX Premium Membership Has Expired");
+
+	    message.setText("""
+	            Hello %s,
+
+	            Your StreamVerseX Premium subscription has expired.
+
+	            Premium features have now been disabled.
+
+	            Renew your subscription anytime to continue enjoying:
+
+	            • AI Movie Recommendations
+	            • AI Anime Recommendations
+	            • AI Movie Summary
+	            • AI Ending Explanation
+	            • Compare Movies
+	            • Ad-Free Premium Experience
+
+	            Visit StreamVerseX to renew your membership.
+
+	            Thank you for being with us.
+
+	            Regards,
+	            StreamVerseX Team
+	            """.formatted(customerName));
+
+	    try {
+	        mailSender.send(message);
+	    } catch (Exception ex) {
+	        throw new RuntimeException(
+	                "Failed to send subscription expiry email.",
+	                ex
+	        );
 	    }
 	}
 	

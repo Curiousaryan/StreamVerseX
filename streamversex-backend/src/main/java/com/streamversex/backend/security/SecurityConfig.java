@@ -18,8 +18,8 @@ import lombok.RequiredArgsConstructor;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-	
-	private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -35,7 +35,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http)
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http)
             throws Exception {
 
         http
@@ -43,32 +44,48 @@ public class SecurityConfig {
 
             .sessionManagement(session ->
                 session.sessionCreationPolicy(
-                    SessionCreationPolicy.STATELESS))
+                    SessionCreationPolicy.STATELESS
+                )
+            )
 
             .authorizeHttpRequests(auth -> auth
 
-            		.requestMatchers(
-            		        "/api/auth/register",
-            		        "/api/auth/login",
-            		        "/api/auth/verify-email",
-            		        "/api/auth/forgot-password",
-            		        "/api/auth/reset-password",
-            		        "/swagger-ui/**",
-            		        "/v3/api-docs/**",
-            		        "/webjars/**"
-            		).permitAll()
+                // ================= PUBLIC =================
 
-            		.requestMatchers("/api/auth/change-password")
-            		.authenticated()
-            		
-                .anyRequest().authenticated())
+                .requestMatchers(
+                    "/api/auth/register",
+                    "/api/auth/login",
+                    "/api/auth/verify-email",
+                    "/api/auth/forgot-password",
+                    "/api/auth/reset-password",
+
+                    // Swagger
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**",
+                    "/webjars/**",
+
+                    // Temporary Razorpay testing page
+                    "/payment-test.html"
+                )
+                .permitAll()
+
+                // ================= AUTHENTICATED =================
+
+                .requestMatchers(
+                    "/api/auth/change-password"
+                )
+                .authenticated()
+
+                // Everything else requires JWT
+                .anyRequest()
+                .authenticated()
+            )
 
             .addFilterBefore(
                 jwtAuthenticationFilter,
-                UsernamePasswordAuthenticationFilter.class);
+                UsernamePasswordAuthenticationFilter.class
+            );
 
         return http.build();
     }
-	
-
 }
