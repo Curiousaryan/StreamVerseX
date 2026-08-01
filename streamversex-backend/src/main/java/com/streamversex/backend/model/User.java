@@ -13,43 +13,54 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Document(collection="users")
+@Document(collection = "users")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
-	
-	@Id
-	private String id;
-	
-	private String name;
-	
-	@Indexed(unique=true)
-	private String email;
-	
-	private String passwordHash;
-	
-	@Builder.Default
-	private Role role=Role.USER;
-	
-	@Builder.Default
-	private boolean isEmailVerified=false;
-	
-	@Builder.Default
-	private boolean isBlocked=false;
-	
-	@Builder.Default
-	private boolean isPremium=false;
-	
-	private String profileImageUrl;
-	
-	private String razorpayCustomerId;
-	
-	@CreatedDate
-	private Instant createdAt;
-	
-	@LastModifiedDate
-	private Instant updatedAt;
 
+    @Id
+    private String id;
+
+    private String name;
+
+    @Indexed(unique = true)
+    private String email;
+
+    private String passwordHash;
+
+    @Builder.Default
+    private Role role = Role.USER;
+
+    @Builder.Default
+    private boolean isEmailVerified = false;
+
+    @Builder.Default
+    private boolean isBlocked = false;
+
+    @Builder.Default
+    private boolean isPremium = false;
+
+    private String profileImageUrl;
+
+    private String razorpayCustomerId;
+
+
+    // ==================== SUBSCRIPTION ====================
+
+    private SubscriptionPlan subscriptionPlan;
+
+    private Instant subscriptionStartedAt;
+
+    private Instant subscriptionExpiresAt;
+
+
+    // ==================== TIMESTAMPS ====================
+
+    @CreatedDate
+    private Instant createdAt;
+
+    @LastModifiedDate
+    private Instant updatedAt;
 }
