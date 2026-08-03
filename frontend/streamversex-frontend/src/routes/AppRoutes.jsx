@@ -16,6 +16,7 @@ import Login from "../pages/public/Login";
 import Register from "../pages/public/Register";
 import ForgotPassword from "../pages/public/ForgotPassword";
 import ResetPassword from "../pages/public/ResetPassword";
+import VerifyEmail from "../pages/public/VerifyEmail";
 
 import Dashboard from "../pages/user/Dashboard";
 import Home from "../pages/user/Home";
@@ -43,6 +44,10 @@ function AppRoutes() {
           <Route
             path={ROUTES.RESET_PASSWORD}
             element={<ResetPassword />}
+          />
+          <Route 
+          path={ROUTES.VERIFY_EMAIL} 
+          element={<VerifyEmail />} 
           />
         </Route>
       </Route>
