@@ -1,156 +1,65 @@
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import HeroBanner from "../../components/user/home/HeroBanner";
 import MediaRow from "../../components/user/home/MediaRow";
 
 import { ROUTES } from "../../routes/routeConstants";
+import { getHomePageData } from "../../services/homeService";
 
 function Home() {
   const navigate = useNavigate();
 
-  // --------------------------------------------------
-  // TEMPORARY DATA
-  // Replace with backend/service data later.
-  // --------------------------------------------------
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const featured = {
-    id: 1,
-    title: "Interstellar",
-    description:
-      "A team of explorers travel through a wormhole in space in an attempt to ensure humanity's survival.",
-    backdrop:
-      "https://image.tmdb.org/t/p/original/rAiYTfKGqDCRIIqo664sY9XZIvQ.jpg",
-    rating: 8.7,
-    year: 2014,
-    genres: ["Sci-Fi", "Drama", "Adventure"],
-    mediaType: "Movie",
-  };
+  const [homeData, setHomeData] = useState({
+    trendingMovies: [],
+    popularMovies: [],
+    topRatedMovies: [],
+    trendingTv: [],
+    popularTv: [],
+    trendingAnime: [],
+    popularAnime: [],
+  });
 
-  const trending = [
-    {
-      id: 1,
-      title: "Interstellar",
-      image:
-        "https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
-      rating: 8.7,
-      year: 2014,
-      mediaType: "Movie",
-    },
-    {
-      id: 2,
-      title: "Inception",
-      image:
-        "https://image.tmdb.org/t/p/w500/oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg",
-      rating: 8.4,
-      year: 2010,
-      mediaType: "Movie",
-    },
-    {
-      id: 3,
-      title: "The Dark Knight",
-      image:
-        "https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg",
-      rating: 8.5,
-      year: 2008,
-      mediaType: "Movie",
-    },
-    {
-      id: 4,
-      title: "Dune",
-      image:
-        "https://image.tmdb.org/t/p/w500/d5NXSklXo0qyIYkgV94XAgMIckC.jpg",
-      rating: 7.8,
-      year: 2021,
-      mediaType: "Movie",
-    },
-    {
-      id: 5,
-      title: "Oppenheimer",
-      image:
-        "https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg",
-      rating: 8.1,
-      year: 2023,
-      mediaType: "Movie",
-    },
-  ];
+  useEffect(() => {
+    const loadHome = async () => {
+      try {
+        const data = await getHomePageData();
+        setHomeData(data);
+      } catch (err) {
+        console.error(err);
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const popularMovies = trending;
+    loadHome();
+  }, []);
 
-  const popularTV = [
-    {
-      id: 101,
-      title: "Breaking Bad",
-      image:
-        "https://image.tmdb.org/t/p/w500/ztkUQFLlC19CCMYHW9o1zWhJRNq.jpg",
-      rating: 8.9,
-      year: 2008,
-      mediaType: "TV",
-    },
-    {
-      id: 102,
-      title: "Stranger Things",
-      image:
-        "https://image.tmdb.org/t/p/w500/49WJfeN0moxb9IPfGn8AIqMGskD.jpg",
-      rating: 8.6,
-      year: 2016,
-      mediaType: "TV",
-    },
-    {
-      id: 103,
-      title: "The Last of Us",
-      image:
-        "https://image.tmdb.org/t/p/w500/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg",
-      rating: 8.6,
-      year: 2023,
-      mediaType: "TV",
-    },
-  ];
-
-  const popularAnime = [
-    {
-      id: 201,
-      title: "Attack on Titan",
-      image: null,
-      rating: 9.0,
-      year: 2013,
-      mediaType: "Anime",
-    },
-    {
-      id: 202,
-      title: "Demon Slayer",
-      image: null,
-      rating: 8.6,
-      year: 2019,
-      mediaType: "Anime",
-    },
-    {
-      id: 203,
-      title: "Jujutsu Kaisen",
-      image: null,
-      rating: 8.7,
-      year: 2020,
-      mediaType: "Anime",
-    },
-  ];
-
-  // --------------------------------------------------
-  // NAVIGATION
-  // --------------------------------------------------
+  const heroItems = useMemo(() => {
+    return [
+      ...homeData.trendingMovies.slice(0, 3),
+      ...homeData.trendingTv.slice(0, 3),
+      ...homeData.trendingAnime.slice(0, 3),
+    ];
+  }, [homeData]);
 
   const handleMediaClick = (item) => {
-    if (!item?.id) return;
+    if (!item) return;
 
-    switch (item.mediaType?.toLowerCase()) {
-      case "movie":
+    switch (item.mediaType) {
+      case "Movie":
         navigate(`/movies/${item.id}`);
         break;
 
-      case "tv":
-      case "tv show":
+      case "TV":
         navigate(`/tv/${item.id}`);
         break;
 
-      case "anime":
+      case "Anime":
         navigate(`/anime/${item.id}`);
         break;
 
@@ -159,72 +68,96 @@ function Home() {
     }
   };
 
-  const handleFeaturedDetails = () => {
-    handleMediaClick(featured);
-  };
-
-  // --------------------------------------------------
-  // WATCHLIST
-  // --------------------------------------------------
-
   const handleAddWatchlist = (item) => {
-    // Backend integration comes later.
-    console.log("Add to watchlist:", item);
+    console.log("Watchlist:", item);
   };
+
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-[#050505] text-white">
+        Loading StreamVerseX...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-[#050505] text-red-500">
+        Failed to load home page.
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-black text-white">
+    <div className="bg-[#050505] text-white">
 
-      {/* Featured content */}
       <HeroBanner
-        title={featured.title}
-        description={featured.description}
-        backdrop={featured.backdrop}
-        rating={featured.rating}
-        year={featured.year}
-        genres={featured.genres}
-        mediaType={featured.mediaType}
-        onViewDetails={handleFeaturedDetails}
-        onWatchlist={() => handleAddWatchlist(featured)}
+        items={heroItems}
+        onViewDetails={handleMediaClick}
+        onWatchlist={handleAddWatchlist}
       />
 
-      {/* Content rows */}
-      <div className="-mt-4 pb-10">
+      <div className="pb-16">
 
         <MediaRow
-          title="Trending Now"
-          items={trending}
-          onItemClick={handleMediaClick}
-          onAddWatchlist={handleAddWatchlist}
-        />
-
-        <MediaRow
-          title="Popular Movies"
-          items={popularMovies}
+          title="🔥 Trending Movies"
+          items={homeData.trendingMovies}
           onItemClick={handleMediaClick}
           onAddWatchlist={handleAddWatchlist}
           onViewAll={() => navigate(ROUTES.MOVIES)}
         />
 
         <MediaRow
-          title="Popular TV Shows"
-          items={popularTV}
+          title="⭐ Popular Movies"
+          items={homeData.popularMovies}
+          onItemClick={handleMediaClick}
+          onAddWatchlist={handleAddWatchlist}
+          onViewAll={() => navigate(ROUTES.MOVIES)}
+        />
+
+        <MediaRow
+          title="🎬 Top Rated Movies"
+          items={homeData.topRatedMovies}
+          onItemClick={handleMediaClick}
+          onAddWatchlist={handleAddWatchlist}
+          onViewAll={() => navigate(ROUTES.MOVIES)}
+        />
+
+        <MediaRow
+          title="📺 Trending TV Shows"
+          items={homeData.trendingTv}
           onItemClick={handleMediaClick}
           onAddWatchlist={handleAddWatchlist}
           onViewAll={() => navigate(ROUTES.TV_SHOWS)}
         />
 
         <MediaRow
-          title="Popular Anime"
-          items={popularAnime}
+          title="📺 Popular TV Shows"
+          items={homeData.popularTv}
+          onItemClick={handleMediaClick}
+          onAddWatchlist={handleAddWatchlist}
+          onViewAll={() => navigate(ROUTES.TV_SHOWS)}
+        />
+
+        <MediaRow
+          title="🍥 Trending Anime"
+          items={homeData.trendingAnime}
           onItemClick={handleMediaClick}
           onAddWatchlist={handleAddWatchlist}
           onViewAll={() => navigate(ROUTES.ANIME)}
         />
 
         <MediaRow
-          title="Recommended For You"
-          items={trending}
+          title="🍥 Popular Anime"
+          items={homeData.popularAnime}
+          onItemClick={handleMediaClick}
+          onAddWatchlist={handleAddWatchlist}
+          onViewAll={() => navigate(ROUTES.ANIME)}
+        />
+
+        <MediaRow
+          title="🤖 Recommended For You"
+          items={homeData.trendingMovies}
           onItemClick={handleMediaClick}
           onAddWatchlist={handleAddWatchlist}
         />

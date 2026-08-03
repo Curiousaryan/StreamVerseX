@@ -3,10 +3,14 @@ import { Link, useNavigate } from "react-router-dom";
 
 import AuthLayout from "../../components/auth/AuthLayout";
 import { ROUTES } from "../../routes/routeConstants";
-import { login } from "../../api/authApi";
+import { login as loginApi } from "../../api/authApi";
+import { useAuth } from "../../context/AuthContext";
 
 function Login() {
   const navigate = useNavigate();
+
+  // AuthContext login function
+  const { login } = useAuth();
 
   // =========================
   // FORM STATE
@@ -35,7 +39,6 @@ function Login() {
       [name]: value,
     }));
 
-    // Clear field error when user starts fixing it
     if (errors[name]) {
       setErrors((previous) => ({
         ...previous,
@@ -43,7 +46,6 @@ function Login() {
       }));
     }
 
-    // Clear backend error after user changes input
     if (apiError) {
       setApiError("");
     }
@@ -89,69 +91,29 @@ function Login() {
     setIsSubmitting(true);
 
     try {
-      const data = await login({
+      // 1. Call Spring Boot login API
+      const data = await loginApi({
         email: formData.email.trim(),
         password: formData.password,
       });
 
       console.log("Login successful:", data);
 
-      // =========================
-      // SAVE AUTH DATA
-      // =========================
+      // 2. Store authentication through AuthContext
+      login(data);
 
-      localStorage.setItem("token", data.token);
-
-      localStorage.setItem(
-        "role",
-        data.role || "USER"
-      );
-
-      if (data.userId) {
-        localStorage.setItem(
-          "userId",
-          data.userId
-        );
-      }
-
-      if (data.name) {
-        localStorage.setItem(
-          "name",
-          data.name
-        );
-      }
-
-      if (data.email) {
-        localStorage.setItem(
-          "email",
-          data.email
-        );
-      }
-
-      // =========================
-      // REDIRECT
-      // =========================
-
+      // 3. Redirect according to role
       if (data.role === "ADMIN") {
-        navigate(
-          ROUTES.ADMIN_DASHBOARD,
-          {
-            replace: true,
-          }
-        );
+        navigate(ROUTES.ADMIN_DASHBOARD, {
+          replace: true,
+        });
       } else {
-        navigate(
-          ROUTES.HOME,
-          {
-            replace: true,
-          }
-        );
+        navigate(ROUTES.HOME, {
+          replace: true,
+        });
       }
     } catch (error) {
-      console.error(
-        "Login failed:",
-        error
-      );
+      console.error("Login failed:", error);
 
       if (!error.response) {
         setApiError(
@@ -161,8 +123,7 @@ function Login() {
         return;
       }
 
-      const responseData =
-        error.response.data;
+      const responseData = error.response.data;
 
       let message =
         "Unable to sign in. Check your email and password.";
@@ -281,9 +242,7 @@ function Login() {
           noValidate
           className="mt-8 space-y-5"
         >
-          {/* =====================
-              EMAIL
-          ====================== */}
+          {/* EMAIL */}
 
           <div>
             <label
@@ -306,13 +265,9 @@ function Login() {
               value={formData.email}
               onChange={handleChange}
               disabled={isSubmitting}
-              aria-invalid={Boolean(
-                errors.email
-              )}
+              aria-invalid={Boolean(errors.email)}
               aria-describedby={
-                errors.email
-                  ? "email-error"
-                  : undefined
+                errors.email ? "email-error" : undefined
               }
               className={`
                 min-h-12
@@ -359,9 +314,7 @@ function Login() {
             )}
           </div>
 
-          {/* =====================
-              PASSWORD
-          ====================== */}
+          {/* PASSWORD */}
 
           <div>
             <div
@@ -383,9 +336,7 @@ function Login() {
               </label>
 
               <Link
-                to={
-                  ROUTES.FORGOT_PASSWORD
-                }
+                to={ROUTES.FORGOT_PASSWORD}
                 className="
                   text-xs font-semibold
                   text-white/40
@@ -402,19 +353,13 @@ function Login() {
               <input
                 id="password"
                 name="password"
-                type={
-                  showPassword
-                    ? "text"
-                    : "password"
-                }
+                type={showPassword ? "text" : "password"}
                 autoComplete="current-password"
                 placeholder="Enter your password"
                 value={formData.password}
                 onChange={handleChange}
                 disabled={isSubmitting}
-                aria-invalid={Boolean(
-                  errors.password
-                )}
+                aria-invalid={Boolean(errors.password)}
                 aria-describedby={
                   errors.password
                     ? "password-error"
@@ -457,8 +402,7 @@ function Login() {
                 disabled={isSubmitting}
                 onClick={() =>
                   setShowPassword(
-                    (previous) =>
-                      !previous
+                    (previous) => !previous
                   )
                 }
                 aria-label={
@@ -479,9 +423,7 @@ function Login() {
                   disabled:opacity-40
                 "
               >
-                {showPassword
-                  ? "Hide"
-                  : "Show"}
+                {showPassword ? "Hide" : "Show"}
               </button>
             </div>
 
@@ -499,9 +441,7 @@ function Login() {
             )}
           </div>
 
-          {/* =====================
-              SUBMIT
-          ====================== */}
+          {/* SUBMIT */}
 
           <button
             type="submit"
@@ -546,9 +486,7 @@ function Login() {
           </button>
         </form>
 
-        {/* =========================
-            REGISTER
-        ========================= */}
+        {/* REGISTER */}
 
         <div
           className="
