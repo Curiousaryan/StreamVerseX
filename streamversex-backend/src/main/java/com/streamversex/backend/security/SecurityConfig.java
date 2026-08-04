@@ -39,8 +39,9 @@ public class SecurityConfig {
             HttpSecurity http)
             throws Exception {
 
-        http
-            .csrf(csrf -> csrf.disable())
+    	http
+        .cors(cors -> {})
+        .csrf(csrf -> csrf.disable())
 
             .sessionManagement(session ->
                 session.sessionCreationPolicy(
@@ -50,36 +51,42 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(auth -> auth
 
-                // ================= PUBLIC =================
+            	    // ==================== PUBLIC ====================
 
-                .requestMatchers(
-                    "/api/auth/register",
-                    "/api/auth/login",
-                    "/api/auth/verify-email",
-                    "/api/auth/forgot-password",
-                    "/api/auth/reset-password",
+            	    .requestMatchers(
+            	        "/api/auth/register",
+            	        "/api/auth/login",
+            	        "/api/auth/verify-email",
+            	        "/api/auth/forgot-password",
+            	        "/api/auth/reset-password",
 
-                    // Swagger
-                    "/swagger-ui/**",
-                    "/v3/api-docs/**",
-                    "/webjars/**",
+            	        // Swagger
+            	        "/swagger-ui/**",
+            	        "/v3/api-docs/**",
+            	        "/webjars/**",
 
-                    // Temporary Razorpay testing page
-                    "/payment-test.html"
-                )
-                .permitAll()
+            	        // Test Page
+            	        "/payment-test.html"
+            	    )
+            	    .permitAll()
 
-                // ================= AUTHENTICATED =================
+            	    // ==================== ADMIN ====================
 
-                .requestMatchers(
-                    "/api/auth/change-password"
-                )
-                .authenticated()
+            	    .requestMatchers("/api/admin/**")
+            	    .hasRole("ADMIN")
 
-                // Everything else requires JWT
-                .anyRequest()
-                .authenticated()
-            )
+            	    // ==================== AUTHENTICATED ====================
+
+            	    .requestMatchers(
+            	        "/api/auth/change-password"
+            	    )
+            	    .authenticated()
+
+            	    // ==================== ALL OTHER APIs ====================
+
+            	    .anyRequest()
+            	    .authenticated()
+            	)
 
             .addFilterBefore(
                 jwtAuthenticationFilter,
