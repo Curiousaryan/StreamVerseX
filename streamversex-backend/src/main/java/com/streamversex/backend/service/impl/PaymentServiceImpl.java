@@ -22,6 +22,8 @@ import com.streamversex.backend.dto.request.VerifyPaymentRequestDTO;
 import com.streamversex.backend.dto.response.PaymentHistoryResponseDTO;
 import com.streamversex.backend.dto.response.PaymentOrderResponseDTO;
 import com.streamversex.backend.email.EmailService;
+import com.streamversex.backend.exception.PaymentNotFoundException;
+import com.streamversex.backend.exception.UserNotFoundException;
 import com.streamversex.backend.model.Invoice;
 import com.streamversex.backend.model.Payment;
 import com.streamversex.backend.model.SubscriptionPlan;
@@ -63,7 +65,7 @@ public class PaymentServiceImpl implements PaymentService {
         // Make sure authenticated user exists.
         userRepository.findById(userId)
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new UserNotFoundException(
                                 "User not found."
                         )
                 );
@@ -172,7 +174,7 @@ public class PaymentServiceImpl implements PaymentService {
                         request.getRazorpayOrderId()
                 )
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new PaymentNotFoundException(
                                 "Payment order not found."
                         )
                 );
@@ -241,7 +243,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new UserNotFoundException(
                                 "User not found."
                         )
                 );
@@ -401,7 +403,7 @@ public class PaymentServiceImpl implements PaymentService {
         // Make sure user exists
         userRepository.findById(userId)
                 .orElseThrow(() ->
-                        new RuntimeException("User not found.")
+                        new UserNotFoundException("User not found.")
                 );
 
         return paymentRepository
@@ -438,7 +440,7 @@ public class PaymentServiceImpl implements PaymentService {
                                 request.getRazorpayOrderId()
                         )
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new PaymentNotFoundException(
                                         "Payment not found."
                                 )
                         );

@@ -277,4 +277,56 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.NOT_FOUND)
                 .body(error);
     }
+    
+    
+    @ExceptionHandler(PaymentNotFoundException.class)
+    public ResponseEntity<ApiErrorDTO> handlePaymentNotFound(
+            PaymentNotFoundException ex,
+            HttpServletRequest request) {
+
+        ApiErrorDTO error = ApiErrorDTO.builder()
+                .timestamp(Instant.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(error);
+    }
+    
+    @ExceptionHandler(AdminOperationException.class)
+    public ResponseEntity<ApiErrorDTO> handleAdminOperation(
+            AdminOperationException ex,
+            HttpServletRequest request) {
+
+        ApiErrorDTO error = ApiErrorDTO.builder()
+                .timestamp(Instant.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity
+                .badRequest()
+                .body(error);
+    }
+    
+    @ExceptionHandler(AIException.class)
+    public ResponseEntity<ApiErrorDTO> handleAIException(
+            AIException ex,
+            HttpServletRequest request) {
+
+        ApiErrorDTO error = ApiErrorDTO.builder()
+                .timestamp(Instant.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity
+                .badRequest()
+                .body(error);
+    }
 }

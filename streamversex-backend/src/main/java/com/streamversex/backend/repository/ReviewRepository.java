@@ -16,21 +16,35 @@ public interface ReviewRepository
     // All reviews for particular content
     List<Review> findByContentTypeAndContentIdOrderByCreatedAtDesc(
             ContentType contentType,
-            Long contentId);
+            Long contentId
+    );
 
     // All reviews written by a user
     List<Review> findByUserIdOrderByCreatedAtDesc(
-            String userId);
+            String userId
+    );
 
     // User's review for particular content
     Optional<Review> findByUserIdAndContentTypeAndContentId(
             String userId,
             ContentType contentType,
-            Long contentId);
+            Long contentId
+    );
 
     // Duplicate prevention
     boolean existsByUserIdAndContentTypeAndContentId(
             String userId,
             ContentType contentType,
-            Long contentId);
+            Long contentId
+    );
+
+    // ==================== ADMIN ====================
+
+    List<Review> findAllByOrderByCreatedAtDesc();
+
+    List<Review> findByReviewTextContainingIgnoreCaseOrderByCreatedAtDesc(
+            String keyword
+    );
+
+    long countByRating(Integer rating);
 }

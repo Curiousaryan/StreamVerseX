@@ -136,7 +136,7 @@ public class ReviewServiceImpl implements ReviewService {
         Review review =
                 reviewRepository.findById(reviewId)
                         .orElseThrow(() ->
-                                new IllegalStateException(
+                                new ReviewNotFoundException(
                                         "Review not found."
                                 )
                         );

@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 import com.streamversex.backend.model.Payment;
+import com.streamversex.backend.payment.PaymentStatus;
 
 @Repository
 public interface PaymentRepository
@@ -19,4 +20,26 @@ public interface PaymentRepository
     List<Payment> findByUserIdOrderByCreatedAtDesc(
             String userId
     );
+    
+    
+    // ==================== ADMIN ====================
+
+    long countByStatus(PaymentStatus status);
+
+    List<Payment> findByStatus(PaymentStatus status);
+
+    List<Payment> findAllByOrderByCreatedAtDesc();
+    
+    List<Payment> findByStatusOrderByCreatedAtDesc(
+            PaymentStatus status
+    );
+    
+    
+    List<Payment> findByRazorpayOrderIdContainingIgnoreCaseOrRazorpayPaymentIdContainingIgnoreCaseOrderByCreatedAtDesc(
+            String orderId,
+            String paymentId
+    );
+    
+
+  
 }

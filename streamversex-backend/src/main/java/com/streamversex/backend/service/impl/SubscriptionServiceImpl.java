@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.streamversex.backend.dto.response.SubscriptionResponseDTO;
 import com.streamversex.backend.email.EmailService;
+import com.streamversex.backend.exception.UserNotFoundException;
 import com.streamversex.backend.model.User;
 import com.streamversex.backend.repository.UserRepository;
 import com.streamversex.backend.service.SubscriptionService;
@@ -58,7 +59,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() ->
-                        new RuntimeException("User not found.")
+                        new UserNotFoundException("User not found.")
                 );
 
         boolean active =

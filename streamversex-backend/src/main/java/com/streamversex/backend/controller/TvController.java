@@ -3,11 +3,7 @@ package com.streamversex.backend.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.streamversex.backend.dto.response.GenreResponseDTO;
 import com.streamversex.backend.dto.response.TvCreditsResponseDTO;
@@ -16,16 +12,33 @@ import com.streamversex.backend.dto.response.TvResponseDTO;
 import com.streamversex.backend.dto.response.VideoResponseDTO;
 import com.streamversex.backend.service.TvService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/tv")
 @RequiredArgsConstructor
+@Tag(
+        name = "TV Shows",
+        description = "Browse, search and retrieve TV show information from TMDB."
+)
 public class TvController {
 
     private final TvService tvService;
 
+    // ==================== TRENDING ====================
 
+    @Operation(
+            summary = "Get Trending TV Shows",
+            description = "Returns the current trending TV shows."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Trending TV shows retrieved successfully")
+    })
     @GetMapping("/trending")
     public ResponseEntity<List<TvResponseDTO>> getTrendingTvShows() {
 
@@ -34,7 +47,15 @@ public class TvController {
         );
     }
 
+    // ==================== POPULAR ====================
 
+    @Operation(
+            summary = "Get Popular TV Shows",
+            description = "Returns the most popular TV shows."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Popular TV shows retrieved successfully")
+    })
     @GetMapping("/popular")
     public ResponseEntity<List<TvResponseDTO>> getPopularTvShows() {
 
@@ -43,7 +64,15 @@ public class TvController {
         );
     }
 
+    // ==================== TOP RATED ====================
 
+    @Operation(
+            summary = "Get Top Rated TV Shows",
+            description = "Returns the highest-rated TV shows."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Top-rated TV shows retrieved successfully")
+    })
     @GetMapping("/top-rated")
     public ResponseEntity<List<TvResponseDTO>> getTopRatedTvShows() {
 
@@ -52,7 +81,15 @@ public class TvController {
         );
     }
 
+    // ==================== ON AIR ====================
 
+    @Operation(
+            summary = "Get On Air TV Shows",
+            description = "Returns TV shows that are currently on air."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "On-air TV shows retrieved successfully")
+    })
     @GetMapping("/on-air")
     public ResponseEntity<List<TvResponseDTO>> getOnAirTvShows() {
 
@@ -61,7 +98,15 @@ public class TvController {
         );
     }
 
+    // ==================== AIRING TODAY ====================
 
+    @Operation(
+            summary = "Get Airing Today TV Shows",
+            description = "Returns TV shows airing today."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "TV shows airing today retrieved successfully")
+    })
     @GetMapping("/airing-today")
     public ResponseEntity<List<TvResponseDTO>> getAiringTodayTvShows() {
 
@@ -69,9 +114,16 @@ public class TvController {
                 tvService.getAiringTodayTvShows()
         );
     }
-    
- // ==================== SEARCH ====================
 
+    // ==================== SEARCH ====================
+
+    @Operation(
+            summary = "Search TV Shows",
+            description = "Searches TV shows by title."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Search completed successfully")
+    })
     @GetMapping("/search")
     public ResponseEntity<List<TvResponseDTO>> searchTvShows(
             @RequestParam String query) {
@@ -81,9 +133,15 @@ public class TvController {
         );
     }
 
-
     // ==================== GENRES ====================
 
+    @Operation(
+            summary = "Get TV Genres",
+            description = "Returns all available TV genres."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Genres retrieved successfully")
+    })
     @GetMapping("/genres")
     public ResponseEntity<List<GenreResponseDTO>> getTvGenres() {
 
@@ -91,9 +149,17 @@ public class TvController {
                 tvService.getTvGenres()
         );
     }
-    
- // ==================== TV DETAILS ====================
 
+    // ==================== DETAILS ====================
+
+    @Operation(
+            summary = "Get TV Show Details",
+            description = "Returns detailed information for a specific TV show."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "TV show details retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "TV show not found")
+    })
     @GetMapping("/{tvId}")
     public ResponseEntity<TvDetailsResponseDTO> getTvDetails(
             @PathVariable Long tvId) {
@@ -102,10 +168,16 @@ public class TvController {
                 tvService.getTvDetails(tvId)
         );
     }
-    
-    
- // ==================== TV CREDITS ====================
 
+    // ==================== CREDITS ====================
+
+    @Operation(
+            summary = "Get TV Show Credits",
+            description = "Returns cast and crew information for a TV show."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Credits retrieved successfully")
+    })
     @GetMapping("/{tvId}/credits")
     public ResponseEntity<TvCreditsResponseDTO> getTvCredits(
             @PathVariable Long tvId) {
@@ -114,10 +186,16 @@ public class TvController {
                 tvService.getTvCredits(tvId)
         );
     }
-    
-    
- // ==================== TV VIDEOS ====================
 
+    // ==================== VIDEOS ====================
+
+    @Operation(
+            summary = "Get TV Show Videos",
+            description = "Returns trailers and videos related to a TV show."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Videos retrieved successfully")
+    })
     @GetMapping("/{tvId}/videos")
     public ResponseEntity<List<VideoResponseDTO>> getTvVideos(
             @PathVariable Long tvId) {
@@ -127,9 +205,15 @@ public class TvController {
         );
     }
 
+    // ==================== RECOMMENDATIONS ====================
 
-    // ==================== TV RECOMMENDATIONS ====================
-
+    @Operation(
+            summary = "Get TV Show Recommendations",
+            description = "Returns recommended TV shows similar to the selected TV show."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Recommendations retrieved successfully")
+    })
     @GetMapping("/{tvId}/recommendations")
     public ResponseEntity<List<TvResponseDTO>> getTvRecommendations(
             @PathVariable Long tvId) {
