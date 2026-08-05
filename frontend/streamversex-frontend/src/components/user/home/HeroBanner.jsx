@@ -1,202 +1,478 @@
 import { useEffect, useState } from "react";
+
 import {
   ChevronLeft,
   ChevronRight,
   Info,
   Plus,
   Check,
+  Play,
   Star,
 } from "lucide-react";
 
-const AUTOPLAY_INTERVAL = 7000;
+import palette from "../../../theme/palette";
+
+const AUTOPLAY_INTERVAL = 8000;
 
 function HeroBanner({
   items = [],
   onViewDetails,
   onWatchlist,
+  onPlay,
   watchlistIds = [],
 }) {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] =
+    useState(0);
+
+  const [fade, setFade] =
+    useState(true);
+
+  /* ============================================
+      AUTO SLIDE
+  ============================================ */
 
   useEffect(() => {
-    if (!items.length) return undefined;
+    if (!items.length) return;
 
-    const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev === items.length - 1 ? 0 : prev + 1));
+    const interval = setInterval(() => {
+      setFade(false);
+
+      setTimeout(() => {
+        setCurrentIndex((prev) =>
+          prev === items.length - 1
+            ? 0
+            : prev + 1
+        );
+
+        setFade(true);
+      }, 250);
     }, AUTOPLAY_INTERVAL);
 
-    return () => clearInterval(timer);
+    return () => clearInterval(interval);
   }, [items.length]);
 
-  if (!items.length) {
-    return null;
-  }
+  if (!items.length) return null;
 
   const current = items[currentIndex];
-  const isInWatchlist = watchlistIds.includes(current.id);
+
+  const isInWatchlist =
+    watchlistIds.includes(current.id);
+
+  /* ============================================
+      NAVIGATION
+  ============================================ */
 
   const previous = () => {
-    setCurrentIndex((prev) => (prev === 0 ? items.length - 1 : prev - 1));
+    setFade(false);
+
+    setTimeout(() => {
+      setCurrentIndex((prev) =>
+        prev === 0
+          ? items.length - 1
+          : prev - 1
+      );
+
+      setFade(true);
+    }, 250);
   };
 
   const next = () => {
-    setCurrentIndex((prev) => (prev === items.length - 1 ? 0 : prev + 1));
+    setFade(false);
+
+    setTimeout(() => {
+      setCurrentIndex((prev) =>
+        prev === items.length - 1
+          ? 0
+          : prev + 1
+      );
+
+      setFade(true);
+    }, 250);
   };
+  /* ============================================
+      UI
+  ============================================ */
 
   return (
-    <section className="group relative h-[88vh] min-h-[560px] w-full overflow-hidden bg-black">
+    <section
+      className="group relative w-full overflow-hidden"
+      style={{
+        height: "88vh",
+        minHeight: "620px",
+        backgroundColor:
+          palette.background.default,
+      }}
+    >
+      {/* ============================================
+            KEYFRAME
+      ============================================ */}
+
       <style>{`
-        @keyframes heroKenBurns {
-          from { transform: scale(1); }
-          to { transform: scale(1.1); }
+        @keyframes heroZoom {
+          from {
+            transform: scale(1);
+          }
+
+          to {
+            transform: scale(1.08);
+          }
         }
       `}</style>
 
-      {/* Background */}
+      {/* ============================================
+            BACKDROP
+      ============================================ */}
+
       <img
-        key={current.id ?? currentIndex}
+        key={current.id}
         src={current.backdrop}
-        alt=""
-        className="absolute inset-0 h-full w-full object-cover"
+        alt={current.title}
+        className={`absolute inset-0 h-full w-full object-cover transition-all duration-500 ${
+          fade ? "opacity-100" : "opacity-0"
+        }`}
         style={{
-          animation: `heroKenBurns ${AUTOPLAY_INTERVAL}ms linear forwards`,
+          animation: `heroZoom ${AUTOPLAY_INTERVAL}ms linear forwards`,
+          filter:
+            "brightness(.72) contrast(1.08) saturate(1.15)",
         }}
       />
 
-      {/* Top gradient — keeps the navbar legible over any image */}
-      <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/80 via-black/20 to-transparent" />
+      {/* ============================================
+            OVERLAYS
+      ============================================ */}
 
-      {/* Left gradient */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black via-black/60 to-transparent" />
+      {/* Top */}
 
-      {/* Bottom gradient */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent" />
+      <div
+        className="absolute inset-x-0 top-0 h-44"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(0,0,0,.92), rgba(0,0,0,.25), transparent)",
+        }}
+      />
 
-      {/* Content */}
-      <div className="relative z-10 flex h-full items-center">
-        <div className="ml-6 max-w-xl md:ml-16 lg:ml-24">
-          {/* Label */}
-          <div className="mb-4 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#e50914]" />
-            <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#e50914]">
-              {current.mediaType}
+      {/* Left */}
+
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(to right, rgba(0,0,0,.96) 0%, rgba(0,0,0,.75) 30%, rgba(0,0,0,.35) 55%, transparent 100%)",
+        }}
+      />
+
+      {/* Bottom */}
+
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(to top, rgba(11,11,15,1) 0%, rgba(11,11,15,.88) 12%, rgba(11,11,15,.35) 45%, transparent 70%)",
+        }}
+      />
+
+      {/* ============================================
+            CONTENT
+      ============================================ */}
+
+      <div className="relative z-20 flex h-full items-center">
+
+        <div className="ml-6 max-w-2xl md:ml-16 lg:ml-24">
+
+          {/* Media Type */}
+
+          <div className="mb-6 flex items-center gap-3">
+
+            <span
+              className="h-2 w-2 rounded-full"
+              style={{
+                backgroundColor:
+                  palette.primary.main,
+              }}
+            />
+
+            <span
+              className="text-xs font-bold uppercase tracking-[0.35em]"
+              style={{
+                color:
+                  palette.primary.main,
+              }}
+            >
+              STREAMVERSE ORIGINAL
             </span>
+
           </div>
 
           {/* Title */}
-          <h1 className="text-4xl font-black leading-[1.05] tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)] md:text-6xl lg:text-7xl">
+
+          <h1
+            className="text-5xl font-black leading-tight lg:text-7xl"
+            style={{
+              color:
+                palette.text.primary,
+            }}
+          >
             {current.title}
           </h1>
 
           {/* Metadata */}
-          <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-            {current.rating !== undefined && current.rating !== null && (
-              <div className="flex items-center gap-1.5 rounded border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 font-semibold text-emerald-400">
-                <Star size={14} className="fill-emerald-400 text-emerald-400" />
-                {typeof current.rating === "number"
-                  ? current.rating.toFixed(1)
-                  : current.rating}
+
+          <div className="mt-6 flex flex-wrap items-center gap-5">
+
+
+                      {/* Rating */}
+
+            {current.rating && (
+              <div
+                className="flex items-center gap-2 rounded-full px-4 py-2"
+                style={{
+                  backgroundColor: "rgba(76,175,80,.15)",
+                  border: `1px solid ${palette.success.main}`,
+                  color: palette.success.main,
+                }}
+              >
+                <Star
+                  size={16}
+                  className="fill-current"
+                />
+
+                <span className="font-semibold">
+                  {Number(current.rating).toFixed(1)}
+                </span>
               </div>
             )}
 
-            {current.year && (
-              <span className="font-medium text-white/70">{current.year}</span>
-            )}
+            {/* Release Year */}
 
-            {current.genres?.length > 0 && (
-              <span className="text-white/50">
-                {current.genres.slice(0, 3).join("  •  ")}
+            {current.year && (
+              <span
+                className="font-medium"
+                style={{
+                  color:
+                    palette.text.secondary,
+                }}
+              >
+                {current.year}
               </span>
             )}
+
+            {/* Genres */}
+
+            {current.genres?.length > 0 && (
+              <span
+                className="font-medium"
+                style={{
+                  color:
+                    palette.text.secondary,
+                }}
+              >
+                {current.genres
+                  .slice(0, 3)
+                  .join(" • ")}
+              </span>
+            )}
+
           </div>
 
-          {/* Description */}
+          {/* ============================================
+                DESCRIPTION
+          ============================================ */}
+
           {current.description && (
-            <p className="mt-6 line-clamp-3 max-w-xl text-base leading-7 text-white/70 drop-shadow-md md:text-lg">
+            <p
+              className="mt-8 max-w-2xl text-lg leading-8"
+              style={{
+                color:
+                  palette.text.secondary,
+              }}
+            >
               {current.description}
             </p>
           )}
 
-          {/* Buttons */}
-          <div className="mt-8 flex flex-wrap items-center gap-3">
+          {/* ============================================
+                ACTION BUTTONS
+          ============================================ */}
+
+          <div className="mt-10 flex flex-wrap items-center gap-4">
+
+            {/* PLAY */}
+
             <button
               type="button"
-              onClick={() => onViewDetails?.(current)}
-              className="flex items-center gap-2.5 rounded-md bg-white px-7 py-3 font-bold text-black transition duration-200 hover:bg-white/85 active:scale-[0.98]"
+              onClick={() =>
+                onPlay?.(current)
+              }
+              className="flex items-center gap-3 rounded-lg px-8 py-3 font-bold shadow-lg transition-all duration-300 hover:scale-105"
+              style={{
+                backgroundColor:
+                  palette.primary.main,
+                color:
+                  palette.text.primary,
+              }}
+            >
+              <Play size={22} />
+
+              Play
+            </button>
+
+            {/* MORE INFO */}
+
+            <button
+              type="button"
+              onClick={() =>
+                onViewDetails?.(
+                  current
+                )
+              }
+              className="flex items-center gap-3 rounded-lg border px-8 py-3 font-semibold transition-all duration-300 hover:scale-105"
+              style={{
+                borderColor:
+                  palette.text.secondary,
+                color:
+                  palette.text.primary,
+                backgroundColor:
+                  "rgba(255,255,255,.08)",
+                backdropFilter:
+                  "blur(10px)",
+              }}
             >
               <Info size={20} />
+
               More Info
             </button>
 
+            {/* WATCHLIST */}
+
             <button
               type="button"
-              onClick={() => onWatchlist?.(current)}
-              className="flex items-center gap-2.5 rounded-md border border-white/15 bg-white/10 px-7 py-3 font-bold text-white backdrop-blur-md transition duration-200 hover:bg-white/20 active:scale-[0.98]"
+              onClick={() =>
+                onWatchlist?.(
+                  current
+                )
+              }
+              className="flex items-center gap-3 rounded-lg border px-8 py-3 font-semibold transition-all duration-300 hover:scale-105"
+              style={{
+                borderColor:
+                  palette.primary.main,
+                color:
+                  palette.text.primary,
+                backgroundColor:
+                  "rgba(229,9,20,.15)",
+              }}
             >
-              {isInWatchlist ? <Check size={20} /> : <Plus size={20} />}
-              {isInWatchlist ? "In Watchlist" : "Watchlist"}
-            </button>
-          </div>
-        </div>
-      </div>
+              {isInWatchlist ? (
+                <Check size={20} />
+              ) : (
+                <Plus size={20} />
+              )}
 
-      {/* Left arrow */}
+              {isInWatchlist
+                ? "In Watchlist"
+                : "Watchlist"}
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+      {/* ============================================
+            PREVIOUS BUTTON
+      ============================================ */}
+
       {items.length > 1 && (
         <button
           type="button"
           onClick={previous}
           aria-label="Previous"
           className="
-            absolute left-5 top-1/2 z-20 hidden -translate-y-1/2
-            rounded-full bg-black/40 p-3 text-white backdrop-blur-md
-            opacity-0 transition-all duration-300
-            hover:bg-black/60 group-hover:opacity-100
+            absolute left-6 top-1/2 z-30
+            hidden -translate-y-1/2
+            rounded-full p-4
+            transition-all duration-300
             lg:flex
+            opacity-0
+            group-hover:opacity-100
+            hover:scale-110
           "
+          style={{
+            backgroundColor: "rgba(0,0,0,.45)",
+            color: palette.text.primary,
+            backdropFilter: "blur(12px)",
+          }}
         >
-          <ChevronLeft size={24} />
+          <ChevronLeft size={28} />
         </button>
       )}
 
-      {/* Right arrow */}
+      {/* ============================================
+            NEXT BUTTON
+      ============================================ */}
+
       {items.length > 1 && (
         <button
           type="button"
           onClick={next}
           aria-label="Next"
           className="
-            absolute right-5 top-1/2 z-20 hidden -translate-y-1/2
-            rounded-full bg-black/40 p-3 text-white backdrop-blur-md
-            opacity-0 transition-all duration-300
-            hover:bg-black/60 group-hover:opacity-100
+            absolute right-6 top-1/2 z-30
+            hidden -translate-y-1/2
+            rounded-full p-4
+            transition-all duration-300
             lg:flex
+            opacity-0
+            group-hover:opacity-100
+            hover:scale-110
           "
+          style={{
+            backgroundColor: "rgba(0,0,0,.45)",
+            color: palette.text.primary,
+            backdropFilter: "blur(12px)",
+          }}
         >
-          <ChevronRight size={24} />
+          <ChevronRight size={28} />
         </button>
       )}
 
-      {/* Indicators */}
+      {/* ============================================
+            INDICATORS
+      ============================================ */}
+
       {items.length > 1 && (
-        <div className="absolute bottom-7 left-1/2 z-20 flex -translate-x-1/2 gap-2">
+        <div className="absolute bottom-8 left-1/2 z-30 flex -translate-x-1/2 gap-3">
+
           {items.map((item, index) => (
+
             <button
-              key={item.id ?? index}
+              key={item.id}
               type="button"
-              onClick={() => setCurrentIndex(index)}
-              aria-label={`Go to slide ${index + 1}`}
-              className={`
-                h-1 rounded-full transition-all duration-500
-                ${
+              onClick={() =>
+                setCurrentIndex(index)
+              }
+              className="transition-all duration-500"
+              style={{
+                width:
                   currentIndex === index
-                    ? "w-8 bg-[#e50914]"
-                    : "w-1 bg-white/30 hover:bg-white/50"
-                }
-              `}
+                    ? "34px"
+                    : "10px",
+
+                height: "10px",
+
+                borderRadius: "999px",
+
+                backgroundColor:
+                  currentIndex === index
+                    ? palette.primary.main
+                    : "rgba(255,255,255,.30)",
+              }}
             />
+
           ))}
+
         </div>
       )}
+
     </section>
   );
 }

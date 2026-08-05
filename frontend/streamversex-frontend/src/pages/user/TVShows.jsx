@@ -1,0 +1,252 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import HeroBanner from "../../components/user/home/HeroBanner";
+import MediaRow from "../../components/user/home/MediaRow";
+
+import palette from "../../theme/palette";
+
+import {
+  getTrendingTvShows,
+  getPopularTvShows,
+  getTopRatedTvShows,
+  getOnAirTvShows,
+  getAiringTodayTvShows,
+} from "../../services/tvShowService";
+
+import { ROUTES } from "../../routes/routeConstants";
+
+function TVShows() {
+  const navigate = useNavigate();
+
+  /* ==========================================
+      STATES
+  ========================================== */
+
+  const [loading, setLoading] = useState(true);
+
+  const [error, setError] = useState("");
+
+  const [trendingTv, setTrendingTv] =
+    useState([]);
+
+  const [popularTv, setPopularTv] =
+    useState([]);
+
+  const [topRatedTv, setTopRatedTv] =
+    useState([]);
+
+  const [onAirTv, setOnAirTv] =
+    useState([]);
+
+  const [airingTodayTv, setAiringTodayTv] =
+    useState([]);
+
+  /* ==========================================
+      LOAD TV SHOWS
+  ========================================== */
+
+  const loadTvShows = async () => {
+    try {
+      setLoading(true);
+
+      setError("");
+
+      const [
+        trending,
+        popular,
+        topRated,
+        onAir,
+        airingToday,
+      ] = await Promise.all([
+        getTrendingTvShows(),
+        getPopularTvShows(),
+        getTopRatedTvShows(),
+        getOnAirTvShows(),
+        getAiringTodayTvShows(),
+      ]);
+
+      setTrendingTv(trending);
+
+      setPopularTv(popular);
+
+      setTopRatedTv(topRated);
+
+      setOnAirTv(onAir);
+
+      setAiringTodayTv(airingToday);
+    } catch (err) {
+      console.error(err);
+
+      setError(
+        "Unable to load TV Shows."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadTvShows();
+  }, []);
+
+  /* ==========================================
+      HANDLERS
+  ========================================== */
+
+  const handleTvClick = (tv) => {
+    navigate(
+      ROUTES.TV_DETAILS.replace(
+        ":id",
+        tv.id
+      )
+    );
+  };
+
+  const handleAddWatchlist = (
+    tv
+  ) => {
+    console.log(tv);
+  };
+    /* ==========================================
+      LOADING
+  ========================================== */
+
+  if (loading) {
+    return (
+      <main
+        className="flex min-h-screen items-center justify-center"
+        style={{
+          backgroundColor:
+            palette.background.default,
+          color:
+            palette.text.primary,
+        }}
+      >
+        <h2 className="text-2xl font-semibold">
+          Loading TV Shows...
+        </h2>
+      </main>
+    );
+  }
+
+  /* ==========================================
+      ERROR
+  ========================================== */
+
+  if (error) {
+    return (
+      <main
+        className="flex min-h-screen items-center justify-center"
+        style={{
+          backgroundColor:
+            palette.background.default,
+        }}
+      >
+        <div className="text-center">
+
+          <h2
+            className="text-3xl font-bold"
+            style={{
+              color:
+                palette.error.main,
+            }}
+          >
+            Something Went Wrong
+          </h2>
+
+          <p
+            className="mt-4"
+            style={{
+              color:
+                palette.text.secondary,
+            }}
+          >
+            {error}
+          </p>
+
+          <button
+            onClick={loadTvShows}
+            className="mt-6 rounded-lg px-8 py-3 transition-all duration-300 hover:scale-105"
+            style={{
+              backgroundColor:
+                palette.primary.main,
+              color:
+                palette.text.primary,
+            }}
+          >
+            Retry
+          </button>
+
+        </div>
+      </main>
+    );
+  }
+
+  /* ==========================================
+      UI
+  ========================================== */
+
+  return (
+    <main
+      className="min-h-screen"
+      style={{
+        backgroundColor:
+          palette.background.default,
+        color:
+          palette.text.primary,
+      }}
+    >
+      {/* Hero Banner */}
+
+      <HeroBanner
+        items={trendingTv}
+        onViewDetails={handleTvClick}
+        onWatchlist={handleAddWatchlist}
+      />
+
+      {/* TV Sections */}
+
+      <section className="relative z-10 -mt-28 pb-20">
+
+        <MediaRow
+          title="Trending TV Shows"
+          items={trendingTv}
+          onMediaClick={handleTvClick}
+          onAddWatchlist={handleAddWatchlist}
+        />
+
+        <MediaRow
+          title="Popular TV Shows"
+          items={popularTv}
+          onMediaClick={handleTvClick}
+          onAddWatchlist={handleAddWatchlist}
+        />
+
+        <MediaRow
+          title="Top Rated TV Shows"
+          items={topRatedTv}
+          onMediaClick={handleTvClick}
+          onAddWatchlist={handleAddWatchlist}
+        />
+        <MediaRow
+          title="Currently On Air"
+          items={onAirTv}
+          onMediaClick={handleTvClick}
+          onAddWatchlist={handleAddWatchlist}
+        />
+
+        <MediaRow
+          title="Airing Today"
+          items={airingTodayTv}
+          onMediaClick={handleTvClick}
+          onAddWatchlist={handleAddWatchlist}
+        />
+
+      </section>
+
+    </main>
+  );
+}
+
+export default TVShows;

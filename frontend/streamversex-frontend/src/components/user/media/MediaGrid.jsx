@@ -2,14 +2,15 @@ import MediaCard from "../../common/MediaCard";
 
 function MediaGrid({
   items = [],
+  mediaType = "Movie",
   onItemClick,
   onAddWatchlist,
   emptyMessage = "No content available.",
 }) {
-  if (!items.length) {
+  if (!items || items.length === 0) {
     return (
-      <div className="flex min-h-[300px] items-center justify-center px-6">
-        <p className="text-center text-sm text-gray-500">
+      <div className="flex min-h-[300px] items-center justify-center">
+        <p className="text-gray-400 text-lg">
           {emptyMessage}
         </p>
       </div>
@@ -21,25 +22,29 @@ function MediaGrid({
       className="
         grid
         grid-cols-2
-        gap-x-4
-        gap-y-8
+        gap-5
         sm:grid-cols-3
-        md:grid-cols-4
-        lg:grid-cols-5
-        xl:grid-cols-6
-        2xl:grid-cols-7
+        lg:grid-cols-4
+        xl:grid-cols-5
+        2xl:grid-cols-6
       "
     >
-      {items.map((item, index) => (
+      {items.map((movie) => (
         <MediaCard
-          key={`${item.mediaType || "media"}-${item.id ?? index}`}
-          title={item.title}
-          image={item.image}
-          rating={item.rating}
-          year={item.year}
-          mediaType={item.mediaType}
-          onClick={() => onItemClick?.(item)}
-          onAddWatchlist={() => onAddWatchlist?.(item)}
+          key={movie.id}
+          title={movie.title}
+          image={movie.posterUrl}
+          rating={movie.rating}
+          year={
+            movie.releaseDate
+              ? movie.releaseDate.substring(0, 4)
+              : ""
+          }
+          mediaType={mediaType}
+          onClick={() => onItemClick?.(movie)}
+          onAddWatchlist={() =>
+            onAddWatchlist?.(movie)
+          }
         />
       ))}
     </div>
