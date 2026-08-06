@@ -14,6 +14,8 @@ import {
   getAiringTodayTvShows,
 } from "../../services/tvShowService";
 
+import { normalizeTv } from "../../services/homeService";
+
 import { ROUTES } from "../../routes/routeConstants";
 
 function TVShows() {
@@ -66,15 +68,15 @@ function TVShows() {
         getAiringTodayTvShows(),
       ]);
 
-      setTrendingTv(trending);
+      setTrendingTv(trending.map(normalizeTv));
 
-      setPopularTv(popular);
+      setPopularTv(popular.map(normalizeTv));
 
-      setTopRatedTv(topRated);
+      setTopRatedTv(topRated.map(normalizeTv));
 
-      setOnAirTv(onAir);
+      setOnAirTv(onAir.map(normalizeTv));
 
-      setAiringTodayTv(airingToday);
+      setAiringTodayTv(airingToday.map(normalizeTv));
     } catch (err) {
       console.error(err);
 
@@ -212,34 +214,34 @@ function TVShows() {
         <MediaRow
           title="Trending TV Shows"
           items={trendingTv}
-          onMediaClick={handleTvClick}
+          onItemClick={handleTvClick}
           onAddWatchlist={handleAddWatchlist}
         />
 
         <MediaRow
           title="Popular TV Shows"
           items={popularTv}
-          onMediaClick={handleTvClick}
+          onItemClick={handleTvClick}
           onAddWatchlist={handleAddWatchlist}
         />
 
         <MediaRow
           title="Top Rated TV Shows"
           items={topRatedTv}
-          onMediaClick={handleTvClick}
+          onItemClick={handleTvClick}
           onAddWatchlist={handleAddWatchlist}
         />
         <MediaRow
           title="Currently On Air"
           items={onAirTv}
-          onMediaClick={handleTvClick}
+          onItemClick={handleTvClick}
           onAddWatchlist={handleAddWatchlist}
         />
 
         <MediaRow
           title="Airing Today"
           items={airingTodayTv}
-          onMediaClick={handleTvClick}
+          onItemClick={handleTvClick}
           onAddWatchlist={handleAddWatchlist}
         />
 

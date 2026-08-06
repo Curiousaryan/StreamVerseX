@@ -12,6 +12,8 @@ import {
   getNowPlayingMovies,
 } from "../../services/movieService";
 
+import { normalizeMovie } from "../../services/homeService";
+
 import { ROUTES } from "../../routes/routeConstants";
 
 import palette from "../../theme/palette";
@@ -66,15 +68,15 @@ function Movies() {
         getNowPlayingMovies(),
       ]);
 
-      setTrendingMovies(trending);
+      setTrendingMovies(trending.map(normalizeMovie));
 
-      setPopularMovies(popular);
+      setPopularMovies(popular.map(normalizeMovie));
 
-      setTopRatedMovies(topRated);
+      setTopRatedMovies(topRated.map(normalizeMovie));
 
-      setUpcomingMovies(upcoming);
+      setUpcomingMovies(upcoming.map(normalizeMovie));
 
-      setNowPlayingMovies(nowPlaying);
+      setNowPlayingMovies(nowPlaying.map(normalizeMovie));
     } catch (err) {
       console.error(err);
 
@@ -199,50 +201,46 @@ function Movies() {
 
       <HeroBanner
         items={trendingMovies}
-        onMediaClick={
-          handleMovieClick
-        }
+        onViewDetails={handleMovieClick}
+        onWatchlist={handleAddWatchlist}
       />
 
       {/* Movie Sections */}
 
       <section className="relative z-10 -mt-28 pb-20">
 
-      </section>
-<section className="relative z-10 -mt-28 pb-20">
-
         <MediaRow
           title="Trending Movies"
           items={trendingMovies}
-          onMediaClick={handleMovieClick}
+          onItemClick={handleMovieClick}
           onAddWatchlist={handleAddWatchlist}
         />
 
         <MediaRow
           title="Popular Movies"
           items={popularMovies}
-          onMediaClick={handleMovieClick}
+          onItemClick={handleMovieClick}
           onAddWatchlist={handleAddWatchlist}
         />
 
         <MediaRow
           title="Top Rated Movies"
           items={topRatedMovies}
-          onMediaClick={handleMovieClick}
+          onItemClick={handleMovieClick}
           onAddWatchlist={handleAddWatchlist}
         />
 
         <MediaRow
           title="Upcoming Movies"
           items={upcomingMovies}
-          onMediaClick={handleMovieClick}
+          onItemClick={handleMovieClick}
           onAddWatchlist={handleAddWatchlist}
         />
 
         <MediaRow
           title="Now Playing"
           items={nowPlayingMovies}
-          onMediaClick={handleMovieClick}
+          onItemClick={handleMovieClick}
           onAddWatchlist={handleAddWatchlist}
         />
       </section>

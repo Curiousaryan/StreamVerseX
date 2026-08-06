@@ -1,6 +1,6 @@
 import axiosInstance from "../api/axiosInstance";
 
-const normalizeMovie = (movie) => ({
+export const normalizeMovie = (movie) => ({
   id: movie.id,
   title: movie.title,
   description: movie.overview,
@@ -12,7 +12,7 @@ const normalizeMovie = (movie) => ({
   mediaType: "Movie",
 });
 
-const normalizeTv = (tv) => ({
+export const normalizeTv = (tv) => ({
   id: tv.id,
   title: tv.name,
   description: tv.overview,
@@ -24,7 +24,7 @@ const normalizeTv = (tv) => ({
   mediaType: "TV",
 });
 
-const normalizeAnime = (anime) => ({
+export const normalizeAnime = (anime) => ({
   id: anime.id,
   title: anime.title || anime.englishTitle,
   description: anime.description,
