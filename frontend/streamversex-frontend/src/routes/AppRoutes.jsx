@@ -22,6 +22,10 @@ import Dashboard from "../pages/user/Dashboard";
 import Home from "../pages/user/Home";
 import Movies from "../pages/user/Movies";
 import TVShows from "../pages/user/TVShows";
+import Anime from "../pages/user/Anime";
+import MovieDetails from "../pages/user/MovieDetails";
+import TVDetails from "../pages/user/TVDetails";
+import AnimeDetails from "../pages/user/AnimeDetails";
 
 import AdminDashboard from "../pages/admin/AdminDashboard";
 
@@ -60,7 +64,11 @@ function AppRoutes() {
         <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
         <Route path={ROUTES.HOME} element={<Home />} />
         <Route path={ROUTES.MOVIES} element={<Movies />} />
+        <Route path={ROUTES.MOVIE_DETAILS} element={<MovieDetails />} />
         <Route path={ROUTES.TV_SHOWS} element={<TVShows />}/>
+        <Route path={ROUTES.TV_DETAILS} element={<TVDetails />} />
+        <Route path={ROUTES.ANIME} element={<Anime />}/>
+        <Route path={ROUTES.ANIME_DETAILS} element={<AnimeDetails />} />
 
         </Route>
       </Route>
