@@ -191,7 +191,7 @@ const isLongTitle =
             CONTENT
       ============================================ */}
 
-      <div className="relative z-20 flex h-full items-center">
+      <div className="relative z-20 flex h-full items-center pb-16">
 
         <div className="ml-6 max-w-2xl md:ml-16 lg:ml-24">
 

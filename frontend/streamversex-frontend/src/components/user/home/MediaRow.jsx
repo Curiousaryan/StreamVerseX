@@ -15,6 +15,7 @@ function MediaRow({
   title,
   items = [],
   onItemClick,
+  onPlay,
   onAddWatchlist,
   onViewAll,
 }) {
@@ -265,6 +266,7 @@ function MediaRow({
               year={item.year}
               mediaType={item.mediaType}
               onClick={() => onItemClick?.(item)}
+              onPlay={() => onPlay?.(item)}
               onAddWatchlist={() =>
                 onAddWatchlist?.(item)
               }
