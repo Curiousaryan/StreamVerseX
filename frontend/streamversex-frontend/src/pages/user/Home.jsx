@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import HeroBanner from "../../components/user/home/HeroBanner";
 import MediaRow from "../../components/user/home/MediaRow";
+import TrailerModal from "../../components/common/TrailerModal";
 
 import { ROUTES } from "../../routes/routeConstants";
 import { getHomePageData } from "../../services/homeService";
@@ -87,6 +88,32 @@ function Home() {
     toggle(item.id, contentType);
   };
 
+  /* ==========================================
+      TRAILER MODAL
+  ========================================== */
+
+  const [trailerOpen, setTrailerOpen] = useState(false);
+  const [trailerLoading, setTrailerLoading] = useState(false);
+  const [trailerKey, setTrailerKey] = useState(null);
+  const [trailerTitle, setTrailerTitle] = useState("");
+
+  const handlePlay = async (item) => {
+    setTrailerTitle(item.title);
+    setTrailerOpen(true);
+    setTrailerLoading(true);
+    setTrailerKey(null);
+
+    const key = await getTrailerKeyForItem(item);
+
+    setTrailerKey(key);
+    setTrailerLoading(false);
+  };
+
+  const closeTrailer = () => {
+    setTrailerOpen(false);
+    setTrailerKey(null);
+  };
+
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center bg-[#050505] text-white">
@@ -110,6 +137,7 @@ function Home() {
         items={heroItems}
         onViewDetails={handleMediaClick}
         onWatchlist={handleAddWatchlist}
+        onPlay={handlePlay}
       />
 
       <div className="pb-16">
@@ -170,6 +198,14 @@ function Home() {
         />
 
       </div>
+
+      <TrailerModal
+        open={trailerOpen}
+        onClose={closeTrailer}
+        title={trailerTitle}
+        trailerKey={trailerKey}
+        loading={trailerLoading}
+      />
 
     </div>
   );

@@ -48,6 +48,11 @@ function MediaCard({
     await toggle(id, contentType);
   };
 
+  const handlePlay = (event) => {
+    event.stopPropagation();
+    onPlay ? onPlay() : onClick?.();
+  };
+
   return (
     <article
       onClick={onClick}

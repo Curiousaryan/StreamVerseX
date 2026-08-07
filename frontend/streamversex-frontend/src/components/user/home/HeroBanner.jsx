@@ -53,10 +53,26 @@ function HeroBanner({
 
   if (!items.length) return null;
 
-  const current = items[currentIndex];
+ const current = items[currentIndex];
 
-  const isInWatchlist =
-    watchlistIds.includes(current.id);
+const isInWatchlist = watchlistIds.includes(current.id);
+
+/* Clean description */
+const cleanDescription =
+  current.description
+    ?.replace(/<[^>]*>/g, "")
+    ?.replace(/\s+/g, " ")
+    ?.trim() || "";
+
+/* Short description */
+const shortDescription =
+  cleanDescription.length > 200
+    ? cleanDescription.substring(0, 200) + "..."
+    : cleanDescription;
+
+/* Long title check */
+const isLongTitle =
+  (current.title || "").length > 35;
 
   /* ============================================
       NAVIGATION
@@ -175,7 +191,7 @@ function HeroBanner({
             CONTENT
       ============================================ */}
 
-      <div className="relative z-20 flex h-full items-center">
+      <div className="relative z-20 flex h-full items-center pb-16">
 
         <div className="ml-6 max-w-2xl md:ml-16 lg:ml-24">
 
@@ -206,14 +222,23 @@ function HeroBanner({
           {/* Title */}
 
           <h1
-            className="text-5xl font-black leading-tight lg:text-7xl"
-            style={{
-              color:
-                palette.text.primary,
-            }}
-          >
-            {current.title}
-          </h1>
+  className={`
+    font-black
+    leading-tight
+    tracking-tight
+    drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)]
+    line-clamp-2
+    max-w-3xl
+
+    ${
+      isLongTitle
+        ? "text-4xl md:text-5xl lg:text-6xl"
+        : "text-5xl md:text-6xl lg:text-7xl"
+    }
+  `}
+>
+  {current.title}
+</h1>
 
           {/* Metadata */}
 
@@ -278,17 +303,21 @@ function HeroBanner({
                 DESCRIPTION
           ============================================ */}
 
-          {current.description && (
-            <p
-              className="mt-8 max-w-2xl text-lg leading-8"
-              style={{
-                color:
-                  palette.text.secondary,
-              }}
-            >
-              {current.description}
-            </p>
-          )}
+{shortDescription && (
+  <p
+    className="
+      mt-6
+      max-w-2xl
+      text-base
+      leading-8
+      text-white/75
+      line-clamp-3
+      md:text-lg
+    "
+  >
+    {shortDescription}
+  </p>
+)}
 
           {/* ============================================
                 ACTION BUTTONS
