@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import HeroBanner from "../../components/user/home/HeroBanner";
 import MediaRow from "../../components/user/home/MediaRow";
+import TrailerModal from "../../components/common/TrailerModal";
 
 import palette from "../../theme/palette";
 
@@ -15,6 +16,7 @@ import {
 } from "../../services/tvShowService";
 
 import { normalizeTv } from "../../services/homeService";
+import { getTrailerKeyForItem } from "../../services/trailerService";
 
 import { ROUTES } from "../../routes/routeConstants";
 
@@ -109,6 +111,32 @@ function TVShows() {
     tv
   ) => {
     console.log(tv);
+  };
+
+  /* ==========================================
+      TRAILER MODAL
+  ========================================== */
+
+  const [trailerOpen, setTrailerOpen] = useState(false);
+  const [trailerLoading, setTrailerLoading] = useState(false);
+  const [trailerKey, setTrailerKey] = useState(null);
+  const [trailerTitle, setTrailerTitle] = useState("");
+
+  const handlePlay = async (tv) => {
+    setTrailerTitle(tv.title);
+    setTrailerOpen(true);
+    setTrailerLoading(true);
+    setTrailerKey(null);
+
+    const key = await getTrailerKeyForItem(tv);
+
+    setTrailerKey(key);
+    setTrailerLoading(false);
+  };
+
+  const closeTrailer = () => {
+    setTrailerOpen(false);
+    setTrailerKey(null);
   };
     /* ==========================================
       LOADING
@@ -205,16 +233,18 @@ function TVShows() {
         items={trendingTv}
         onViewDetails={handleTvClick}
         onWatchlist={handleAddWatchlist}
+        onPlay={handlePlay}
       />
 
       {/* TV Sections */}
 
-      <section className="relative z-10 -mt-28 pb-20">
+      <section className="relative z-10 -mt-8 pb-20">
 
         <MediaRow
           title="Trending TV Shows"
           items={trendingTv}
           onItemClick={handleTvClick}
+          onPlay={handlePlay}
           onAddWatchlist={handleAddWatchlist}
         />
 
@@ -222,6 +252,7 @@ function TVShows() {
           title="Popular TV Shows"
           items={popularTv}
           onItemClick={handleTvClick}
+          onPlay={handlePlay}
           onAddWatchlist={handleAddWatchlist}
         />
 
@@ -229,12 +260,14 @@ function TVShows() {
           title="Top Rated TV Shows"
           items={topRatedTv}
           onItemClick={handleTvClick}
+          onPlay={handlePlay}
           onAddWatchlist={handleAddWatchlist}
         />
         <MediaRow
           title="Currently On Air"
           items={onAirTv}
           onItemClick={handleTvClick}
+          onPlay={handlePlay}
           onAddWatchlist={handleAddWatchlist}
         />
 
@@ -242,10 +275,19 @@ function TVShows() {
           title="Airing Today"
           items={airingTodayTv}
           onItemClick={handleTvClick}
+          onPlay={handlePlay}
           onAddWatchlist={handleAddWatchlist}
         />
 
       </section>
+
+      <TrailerModal
+        open={trailerOpen}
+        onClose={closeTrailer}
+        title={trailerTitle}
+        trailerKey={trailerKey}
+        loading={trailerLoading}
+      />
 
     </main>
   );

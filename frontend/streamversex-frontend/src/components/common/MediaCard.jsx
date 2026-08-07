@@ -10,11 +10,17 @@ function MediaCard({
   year,
   mediaType,
   onClick,
+  onPlay,
   onAddWatchlist,
 }) {
   const handleWatchlist = (event) => {
     event.stopPropagation();
     onAddWatchlist?.();
+  };
+
+  const handlePlay = (event) => {
+    event.stopPropagation();
+    onPlay ? onPlay() : onClick?.();
   };
 
   return (
@@ -87,7 +93,7 @@ function MediaCard({
           <div className="flex gap-3">
 
             <button
-              onClick={onClick}
+              onClick={handlePlay}
               className="
                 flex
                 h-14

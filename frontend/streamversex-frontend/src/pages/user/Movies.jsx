@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import HeroBanner from "../../components/user/home/HeroBanner";
 import MediaRow from "../../components/user/home/MediaRow";
+import TrailerModal from "../../components/common/TrailerModal";
 
 import {
   getTrendingMovies,
@@ -13,6 +14,7 @@ import {
 } from "../../services/movieService";
 
 import { normalizeMovie } from "../../services/homeService";
+import { getTrailerKeyForItem } from "../../services/trailerService";
 
 import { ROUTES } from "../../routes/routeConstants";
 
@@ -109,6 +111,32 @@ function Movies() {
     console.log(movie);
   };
 
+  /* ============================================
+      TRAILER MODAL
+  ============================================ */
+
+  const [trailerOpen, setTrailerOpen] = useState(false);
+  const [trailerLoading, setTrailerLoading] = useState(false);
+  const [trailerKey, setTrailerKey] = useState(null);
+  const [trailerTitle, setTrailerTitle] = useState("");
+
+  const handlePlay = async (movie) => {
+    setTrailerTitle(movie.title);
+    setTrailerOpen(true);
+    setTrailerLoading(true);
+    setTrailerKey(null);
+
+    const key = await getTrailerKeyForItem(movie);
+
+    setTrailerKey(key);
+    setTrailerLoading(false);
+  };
+
+  const closeTrailer = () => {
+    setTrailerOpen(false);
+    setTrailerKey(null);
+  };
+
     /* ============================================
       LOADING
   ============================================ */
@@ -203,16 +231,18 @@ function Movies() {
         items={trendingMovies}
         onViewDetails={handleMovieClick}
         onWatchlist={handleAddWatchlist}
+        onPlay={handlePlay}
       />
 
       {/* Movie Sections */}
 
-      <section className="relative z-10 -mt-28 pb-20">
+      <section className="relative z-10 -mt-8 pb-20">
 
         <MediaRow
           title="Trending Movies"
           items={trendingMovies}
           onItemClick={handleMovieClick}
+          onPlay={handlePlay}
           onAddWatchlist={handleAddWatchlist}
         />
 
@@ -220,6 +250,7 @@ function Movies() {
           title="Popular Movies"
           items={popularMovies}
           onItemClick={handleMovieClick}
+          onPlay={handlePlay}
           onAddWatchlist={handleAddWatchlist}
         />
 
@@ -227,6 +258,7 @@ function Movies() {
           title="Top Rated Movies"
           items={topRatedMovies}
           onItemClick={handleMovieClick}
+          onPlay={handlePlay}
           onAddWatchlist={handleAddWatchlist}
         />
 
@@ -234,6 +266,7 @@ function Movies() {
           title="Upcoming Movies"
           items={upcomingMovies}
           onItemClick={handleMovieClick}
+          onPlay={handlePlay}
           onAddWatchlist={handleAddWatchlist}
         />
 
@@ -241,13 +274,20 @@ function Movies() {
           title="Now Playing"
           items={nowPlayingMovies}
           onItemClick={handleMovieClick}
+          onPlay={handlePlay}
           onAddWatchlist={handleAddWatchlist}
         />
       </section>
+
+      <TrailerModal
+        open={trailerOpen}
+        onClose={closeTrailer}
+        title={trailerTitle}
+        trailerKey={trailerKey}
+        loading={trailerLoading}
+      />
     </main>
   );
 }
 
 export default Movies;
-
-

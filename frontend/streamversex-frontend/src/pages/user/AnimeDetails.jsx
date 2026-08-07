@@ -41,6 +41,7 @@ import {
 } from "../../services/animeService";
 
 import { normalizeAnime } from "../../services/homeService";
+import { useFavorite } from "../../hooks/useFavorite";
 
 function AnimeDetails() {
   const { id } = useParams();
@@ -56,6 +57,18 @@ function AnimeDetails() {
   const [anime, setAnime] = useState(null);
   const [characters, setCharacters] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
+
+  const favoriteItem = anime
+    ? {
+        id: anime.id,
+        title: anime.title || anime.englishTitle,
+        poster: anime.coverImageUrl,
+        mediaType: "Anime",
+      }
+    : null;
+
+  const { isFavorite, saving: favoriteSaving, toggle: toggleFavorite } =
+    useFavorite(favoriteItem);
 
   /* ==========================================
       LOAD DATA
@@ -290,11 +303,21 @@ function AnimeDetails() {
               )}
 
               <button
-                className="flex h-11 w-11 items-center justify-center rounded-full border transition hover:scale-105"
-                style={{ borderColor: palette.text.secondary }}
-                title="Add to Favorites"
+                onClick={toggleFavorite}
+                disabled={favoriteSaving}
+                className="flex h-11 w-11 items-center justify-center rounded-full border transition hover:scale-105 disabled:opacity-60"
+                style={{
+                  borderColor: isFavorite
+                    ? palette.primary.main
+                    : palette.text.secondary,
+                  backgroundColor: isFavorite
+                    ? "rgba(229,9,20,.15)"
+                    : "transparent",
+                  color: isFavorite ? palette.primary.main : "inherit",
+                }}
+                title={isFavorite ? "Remove from Favorites" : "Add to Favorites"}
               >
-                <Heart size={18} />
+                <Heart size={18} fill={isFavorite ? "currentColor" : "none"} />
               </button>
 
               <button

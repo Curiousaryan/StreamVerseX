@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import HeroBanner from "../../components/user/home/HeroBanner";
 import MediaRow from "../../components/user/home/MediaRow";
+import TrailerModal from "../../components/common/TrailerModal";
 
 import palette from "../../theme/palette";
 
@@ -13,6 +14,8 @@ import {
   getSeasonalAnime,
   getUpcomingAnime,
 } from "../../services/animeService";
+
+import { getTrailerKeyForItem } from "../../services/trailerService";
 
 import { ROUTES } from "../../routes/routeConstants";
 
@@ -111,6 +114,32 @@ function Anime() {
     console.log(anime);
   };
 
+  /* ==========================================
+      TRAILER MODAL
+  ========================================== */
+
+  const [trailerOpen, setTrailerOpen] = useState(false);
+  const [trailerLoading, setTrailerLoading] = useState(false);
+  const [trailerKey, setTrailerKey] = useState(null);
+  const [trailerTitle, setTrailerTitle] = useState("");
+
+  const handlePlay = async (anime) => {
+    setTrailerTitle(anime.title);
+    setTrailerOpen(true);
+    setTrailerLoading(true);
+    setTrailerKey(null);
+
+    const key = await getTrailerKeyForItem(anime);
+
+    setTrailerKey(key);
+    setTrailerLoading(false);
+  };
+
+  const closeTrailer = () => {
+    setTrailerOpen(false);
+    setTrailerKey(null);
+  };
+
     /* ==========================================
       LOADING
   ========================================== */
@@ -206,16 +235,18 @@ function Anime() {
         items={trendingAnime}
         onViewDetails={handleAnimeClick}
         onWatchlist={handleAddWatchlist}
+        onPlay={handlePlay}
       />
 
       {/* Anime Sections */}
 
-      <section className="relative z-10 -mt-28 pb-20">
+      <section className="relative z-10 -mt-8 pb-20">
 
         <MediaRow
           title="Trending Anime"
           items={trendingAnime}
           onItemClick={handleAnimeClick}
+          onPlay={handlePlay}
           onAddWatchlist={handleAddWatchlist}
         />
 
@@ -223,6 +254,7 @@ function Anime() {
           title="Popular Anime"
           items={popularAnime}
           onItemClick={handleAnimeClick}
+          onPlay={handlePlay}
           onAddWatchlist={handleAddWatchlist}
         />
 
@@ -230,12 +262,14 @@ function Anime() {
           title="Top Rated Anime"
           items={topRatedAnime}
           onItemClick={handleAnimeClick}
+          onPlay={handlePlay}
           onAddWatchlist={handleAddWatchlist}
         />
         <MediaRow
           title="Seasonal Anime"
           items={seasonalAnime}
           onItemClick={handleAnimeClick}
+          onPlay={handlePlay}
           onAddWatchlist={handleAddWatchlist}
         />
 
@@ -243,10 +277,19 @@ function Anime() {
           title="Upcoming Anime"
           items={upcomingAnime}
           onItemClick={handleAnimeClick}
+          onPlay={handlePlay}
           onAddWatchlist={handleAddWatchlist}
         />
 
       </section>
+
+      <TrailerModal
+        open={trailerOpen}
+        onClose={closeTrailer}
+        title={trailerTitle}
+        trailerKey={trailerKey}
+        loading={trailerLoading}
+      />
 
     </main>
   );

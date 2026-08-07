@@ -74,8 +74,10 @@ export const ENDPOINTS = {
   FAVORITES: {
     ALL: "/api/favorites",
     ADD: "/api/favorites",
-    REMOVE: (id) => `/api/favorites/${id}`,
-    CHECK: (id) => `/api/favorites/check/${id}`,
+    REMOVE: (contentType, contentId) =>
+      `/api/favorites/${contentType}/${contentId}`,
+    CHECK: (contentType, contentId) =>
+      `/api/favorites/check/${contentType}/${contentId}`,
   },
 
   /* =====================================================

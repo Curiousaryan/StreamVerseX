@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 
 import AppBar from "@mui/material/AppBar";
@@ -37,6 +37,7 @@ import {
   ChevronDown,
   Settings,
   Star,
+  Clock,
 } from "lucide-react";
 
 import { ROUTES } from "../../../routes/routeConstants";
@@ -65,6 +66,7 @@ function getInitial(name, email) {
 function UserNavbar() {
   const theme = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
 
   const scrolled = useScrollTrigger({
@@ -76,6 +78,7 @@ function UserNavbar() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [anchorEl, setAnchorEl] = useState(null);
+  const [searchHistory, setSearchHistory] = useState([]);
 
   const searchInputRef = useRef(null);
   const profileOpen = Boolean(anchorEl);
@@ -84,11 +87,73 @@ function UserNavbar() {
   const email = localStorage.getItem("email");
   const initial = getInitial(displayName, email);
 
+  const SEARCH_HISTORY_KEY = "streamversex_search_history";
+  const MAX_HISTORY = 8;
+
   useEffect(() => {
     if (searchOpen) {
       searchInputRef.current?.focus();
+
+      try {
+        const stored = JSON.parse(
+          localStorage.getItem(SEARCH_HISTORY_KEY) || "[]"
+        );
+        setSearchHistory(Array.isArray(stored) ? stored : []);
+      } catch {
+        setSearchHistory([]);
+      }
     }
   }, [searchOpen]);
+
+  const saveToHistory = (query) => {
+    try {
+      const stored = JSON.parse(
+        localStorage.getItem(SEARCH_HISTORY_KEY) || "[]"
+      );
+      const existing = Array.isArray(stored) ? stored : [];
+
+      const updated = [
+        query,
+        ...existing.filter(
+          (item) => item.toLowerCase() !== query.toLowerCase()
+        ),
+      ].slice(0, MAX_HISTORY);
+
+      localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(updated));
+      setSearchHistory(updated);
+    } catch {
+      // localStorage unavailable — fail silently, history just won't persist
+    }
+  };
+
+  const removeFromHistory = (query) => {
+    const updated = searchHistory.filter((item) => item !== query);
+    setSearchHistory(updated);
+    try {
+      localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+  };
+
+  const clearHistory = () => {
+    setSearchHistory([]);
+    try {
+      localStorage.removeItem(SEARCH_HISTORY_KEY);
+    } catch {
+      // ignore
+    }
+  };
+
+  const runSearch = (query) => {
+    const trimmed = query.trim();
+    if (!trimmed) return;
+
+    saveToHistory(trimmed);
+    navigate(`${ROUTES.SEARCH}?q=${encodeURIComponent(trimmed)}`);
+    setSearchOpen(false);
+    setSearchValue("");
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -103,10 +168,7 @@ function UserNavbar() {
 
   const handleSearchSubmit = (event) => {
     event.preventDefault();
-    const query = searchValue.trim();
-    navigate(query ? `${ROUTES.SEARCH}?q=${encodeURIComponent(query)}` : ROUTES.SEARCH);
-    setSearchOpen(false);
-    setSearchValue("");
+    runSearch(searchValue);
   };
 
   return (
@@ -197,66 +259,31 @@ function UserNavbar() {
 
           {/* Actions */}
           <Box className="ml-auto flex items-center gap-1 md:gap-2">
-            {/* Search */}
-            <Box className="flex items-center">
-              <AnimatePresence mode="wait" initial={false}>
-                {searchOpen ? (
-                  <motion.form
-                    key="search-open"
-                    onSubmit={handleSearchSubmit}
-                    initial={{ width: 40, opacity: 0 }}
-                    animate={{ width: "auto", opacity: 1 }}
-                    exit={{ width: 40, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="flex items-center overflow-hidden rounded-full border border-white/15 bg-white/5 pl-3 pr-1"
-                  >
-                    <Search size={16} className="shrink-0 text-gray-400" />
-                    <InputBase
-                      inputRef={searchInputRef}
-                      value={searchValue}
-                      onChange={(event) => setSearchValue(event.target.value)}
-                      onBlur={() => !searchValue && setSearchOpen(false)}
-                      placeholder="Search titles..."
-                      sx={{
-                        color: "#fff",
-                        px: 1,
-                        py: 0.5,
-                        fontSize: "0.875rem",
-                        width: { xs: 112, sm: 176 },
-                        "& input::placeholder": { color: "grey.500", opacity: 1 },
-                      }}
-                    />
-                    <IconButton
-                      type="button"
-                      size="small"
-                      onClick={() => {
-                        setSearchOpen(false);
-                        setSearchValue("");
-                      }}
-                      sx={{ color: "grey.400", "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.1)" } }}
-                      aria-label="Close search"
-                    >
-                      <X size={14} />
-                    </IconButton>
-                  </motion.form>
-                ) : (
-                  <motion.div
-                    key="search-closed"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <IconButton
-                      onClick={() => setSearchOpen(true)}
-                      sx={{ color: "grey.300", "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.05)" } }}
-                      aria-label="Search"
-                    >
-                      <Search size={20} />
-                    </IconButton>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </Box>
+            {/* Search trigger */}
+            <Tooltip title="Search">
+              <IconButton
+                onClick={() => {
+                  if (location.pathname === ROUTES.SEARCH) {
+                    // Already on the search page — it has its own search
+                    // bar, so avoid stacking a second one on top of it.
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                    document
+                      .querySelector("[data-page-search-input]")
+                      ?.focus();
+                    return;
+                  }
+                  setSearchOpen((v) => !v);
+                }}
+                sx={{
+                  color: searchOpen ? "#fff" : "grey.300",
+                  bgcolor: searchOpen ? "rgba(255,255,255,0.08)" : "transparent",
+                  "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.08)" },
+                }}
+                aria-label="Search"
+              >
+                <Search size={20} />
+              </IconButton>
+            </Tooltip>
 
             <Tooltip title="Favorites">
               <IconButton
@@ -385,6 +412,183 @@ function UserNavbar() {
           </Box>
         </Toolbar>
       </AppBar>
+
+      {/* Search dropdown — a floating spotlight-style card instead of an
+          inline-expanding field or a flat full-width bar, so it can never
+          collide with the centered nav links and actually feels intentional */}
+      <AnimatePresence>
+        {searchOpen && location.pathname !== ROUTES.SEARCH && (
+          <>
+            <motion.div
+              key="search-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setSearchOpen(false)}
+              className="fixed inset-0 z-40"
+              style={{
+                backgroundColor: "rgba(0,0,0,0.7)",
+                backdropFilter: "blur(2px)",
+              }}
+            />
+
+            <motion.div
+              key="search-panel"
+              initial={{ opacity: 0, y: -24, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -16, scale: 0.98 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="fixed left-0 right-0 top-16 z-50 flex justify-center px-4 md:top-20"
+            >
+              <Box
+                className="w-full max-w-2xl overflow-hidden rounded-2xl"
+                sx={{
+                  backgroundColor: "rgba(21, 21, 27, 0.98)",
+                  backdropFilter: "blur(20px)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  boxShadow:
+                    "0 25px 60px -12px rgba(0,0,0,0.7), 0 0 0 1px rgba(229,9,20,0.08)",
+                }}
+              >
+                <Box
+                  component="form"
+                  onSubmit={handleSearchSubmit}
+                  className="flex w-full items-center gap-3 px-5 py-4 md:px-6"
+                >
+                  <Search
+                    size={22}
+                    className="shrink-0"
+                    style={{ color: theme.palette.primary.main }}
+                  />
+
+                  <InputBase
+                    inputRef={searchInputRef}
+                    value={searchValue}
+                    onChange={(event) => setSearchValue(event.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") {
+                        setSearchOpen(false);
+                        setSearchValue("");
+                      }
+                    }}
+                    placeholder="Search movies, TV shows & anime..."
+                    autoFocus
+                    fullWidth
+                    sx={{
+                      color: "#fff",
+                      fontSize: { xs: "1rem", md: "1.1rem" },
+                      fontWeight: 500,
+                      "& input::placeholder": { color: "grey.500", opacity: 1 },
+                    }}
+                  />
+
+                  {searchValue && (
+                    <IconButton
+                      type="button"
+                      size="small"
+                      onClick={() => setSearchValue("")}
+                      sx={{ color: "grey.400", "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.1)" } }}
+                      aria-label="Clear search"
+                    >
+                      <X size={16} />
+                    </IconButton>
+                  )}
+
+                  <IconButton
+                    type="button"
+                    size="small"
+                    onClick={() => {
+                      setSearchOpen(false);
+                      setSearchValue("");
+                    }}
+                    sx={{
+                      color: "grey.400",
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      borderRadius: "8px",
+                      "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.08)" },
+                    }}
+                    aria-label="Close search"
+                  >
+                    <X size={16} />
+                  </IconButton>
+                </Box>
+
+                {/* Hint footer — gives the panel visual weight even before typing */}
+                <Box
+                  className="flex items-center justify-between px-5 py-2.5 text-xs md:px-6"
+                  sx={{
+                    borderTop: "1px solid rgba(255,255,255,0.06)",
+                    color: "grey.500",
+                  }}
+                >
+                  <span>Try “Michael”, “House of the Dragon”, “Naruto”...</span>
+                  <span className="hidden sm:inline">Press Enter to search</span>
+                </Box>
+
+                {/* Recent searches */}
+                {!searchValue && searchHistory.length > 0 && (
+                  <Box
+                    className="px-5 pb-4 pt-1 md:px-6"
+                    sx={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
+                  >
+                    <Box className="mb-2 mt-3 flex items-center justify-between">
+                      <span
+                        className="text-xs font-semibold uppercase tracking-wide"
+                        style={{ color: "#8a8a92" }}
+                      >
+                        Recent Searches
+                      </span>
+                      <button
+                        type="button"
+                        onClick={clearHistory}
+                        className="text-xs font-medium transition hover:text-white"
+                        style={{ color: "#8a8a92" }}
+                      >
+                        Clear all
+                      </button>
+                    </Box>
+
+                    <Box className="flex flex-wrap gap-2">
+                      {searchHistory.map((query) => (
+                        <Box
+                          key={query}
+                          className="group flex items-center gap-1.5 rounded-full py-1.5 pl-3 pr-2 text-sm transition"
+                          sx={{
+                            border: "1px solid rgba(255,255,255,0.1)",
+                            color: "grey.300",
+                            "&:hover": {
+                              borderColor: "rgba(255,255,255,0.25)",
+                              bgcolor: "rgba(255,255,255,0.05)",
+                            },
+                          }}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => runSearch(query)}
+                            className="flex items-center gap-1.5"
+                          >
+                            <Clock size={13} className="shrink-0 opacity-60" />
+                            {query}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeFromHistory(query)}
+                            aria-label={`Remove ${query} from history`}
+                            className="ml-0.5 rounded-full p-0.5 opacity-0 transition hover:bg-white/10 group-hover:opacity-100"
+                          >
+                            <X size={12} />
+                          </button>
+                        </Box>
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+              </Box>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Mobile drawer */}
       <Drawer
