@@ -36,4 +36,5 @@ export const ROUTES = {
   ADMIN_PAYMENTS: "/admin/payments",
   ADMIN_PREMIUM: "/admin/premium",
   ADMIN_ANALYTICS: "/admin/analytics",
+  ADMIN_SETTINGS: "/admin/settings",
 };

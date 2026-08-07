@@ -1,5 +1,5 @@
-import axiosInstance from "../api/axiosInstance";
-import { ENDPOINTS } from "../api/endpoints";
+import axiosInstance from "../../api/axiosInstance";
+import { ENDPOINTS } from "../../api/endpoints";
 
 /* ===============================
    Trending Movies
