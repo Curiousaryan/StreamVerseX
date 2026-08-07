@@ -34,15 +34,15 @@ import MediaRow from "../../components/user/home/MediaRow";
 import palette from "../../theme/palette";
 
 import {
-  getMovieDetails,
-  getMovieCredits,
-  getMovieVideos,
-  getMovieRecommendations,
-} from "../../services/movieService";
+  getTvDetails,
+  getTvCredits,
+  getTvVideos,
+  getTvRecommendations,
+} from "../../services/tvShowService";
 
-import { normalizeMovie } from "../../services/homeService";
+import { normalizeTv } from "../../services/homeService";
 
-function MovieDetails() {
+function TVDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -53,7 +53,7 @@ function MovieDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const [movie, setMovie] = useState(null);
+  const [tv, setTv] = useState(null);
   const [cast, setCast] = useState([]);
   const [crew, setCrew] = useState([]);
   const [videos, setVideos] = useState([]);
@@ -64,20 +64,20 @@ function MovieDetails() {
       LOAD DATA
   ========================================== */
 
-  const loadMovie = async () => {
+  const loadTv = async () => {
     try {
       setLoading(true);
       setError("");
 
-      const [movieData, creditsData, videosData, recommendationsData] =
+      const [details, creditsData, videosData, recommendationsData] =
         await Promise.all([
-          getMovieDetails(id),
-          getMovieCredits(id),
-          getMovieVideos(id),
-          getMovieRecommendations(id),
+          getTvDetails(id),
+          getTvCredits(id),
+          getTvVideos(id),
+          getTvRecommendations(id),
         ]);
 
-      setMovie(movieData);
+      setTv(details);
       setCast(creditsData?.cast || []);
       setCrew(creditsData?.crew || []);
       const vids = videosData || [];
@@ -87,17 +87,17 @@ function MovieDetails() {
         vids[0] ||
         null;
       setActiveVideo(firstTrailer);
-      setRecommendations((recommendationsData || []).map(normalizeMovie));
+      setRecommendations((recommendationsData || []).map(normalizeTv));
     } catch (err) {
       console.error(err);
-      setError("Unable to load movie details.");
+      setError("Unable to load TV Show.");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadMovie();
+    loadTv();
   }, [id]);
 
   /* ==========================================
@@ -113,12 +113,12 @@ function MovieDetails() {
           color: palette.text.primary,
         }}
       >
-        <h2 className="text-2xl font-semibold">Loading Movie...</h2>
+        <h2 className="text-2xl font-semibold">Loading TV Show...</h2>
       </main>
     );
   }
 
-  if (error || !movie) {
+  if (error || !tv) {
     return (
       <main
         className="flex min-h-screen items-center justify-center"
@@ -129,7 +129,7 @@ function MovieDetails() {
             className="text-3xl font-bold"
             style={{ color: palette.error.main }}
           >
-            Unable to Load Movie
+            Unable to Load TV Show
           </h2>
           <p className="mt-4" style={{ color: palette.text.secondary }}>
             {error}
@@ -143,21 +143,21 @@ function MovieDetails() {
       DERIVED VALUES
   ========================================== */
 
-  const year = movie.releaseDate ? movie.releaseDate.slice(0, 4) : "";
-  const scorePct = movie.rating ? Math.round(movie.rating * 10) : null;
+  const year = tv.firstAirDate ? tv.firstAirDate.slice(0, 4) : "";
+  const scorePct = tv.rating ? Math.round(tv.rating * 10) : null;
 
   const keyCrew = crew.filter((c) =>
-    ["Director", "Writer", "Screenplay", "Story", "Producer"].includes(c.job)
+    ["Creator", "Executive Producer", "Director", "Writer"].includes(c.job)
   );
 
-  const directorNames = crew
-    .filter((c) => c.job === "Director")
+  const creatorNames = crew
+    .filter((c) => c.job === "Creator" || c.job === "Executive Producer")
     .map((c) => c.name)
     .join(", ");
 
-  const trailer = videos.find(
-    (v) => v.site === "YouTube" && v.type === "Trailer"
-  ) || videos[0];
+  const trailer =
+    videos.find((v) => v.site === "YouTube" && v.type === "Trailer") ||
+    videos[0];
 
   /* ==========================================
       UI
@@ -177,16 +177,16 @@ function MovieDetails() {
 
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
-          {movie.backdropUrl || movie.posterUrl ? (
+          {tv.backdropUrl || tv.posterUrl ? (
             <img
-              src={movie.backdropUrl || movie.posterUrl}
-              alt={movie.title}
+              src={tv.backdropUrl || tv.posterUrl}
+              alt={tv.name}
               className="h-full w-full object-cover"
               style={{
-                filter: movie.backdropUrl
+                filter: tv.backdropUrl
                   ? "brightness(.55) blur(0px)"
                   : "brightness(.2) blur(20px) saturate(1.3)",
-                transform: movie.backdropUrl ? "none" : "scale(1.2)",
+                transform: tv.backdropUrl ? "none" : "scale(1.2)",
               }}
             />
           ) : (
@@ -208,15 +208,15 @@ function MovieDetails() {
         <div className="relative z-10 flex w-full flex-col gap-6 px-6 py-10 md:flex-row md:px-10 lg:px-14">
           {/* Poster */}
           <img
-            src={movie.posterUrl}
-            alt={movie.title}
+            src={tv.posterUrl}
+            alt={tv.name}
             className="h-[270px] w-[180px] flex-shrink-0 rounded-xl object-cover shadow-2xl md:h-[330px] md:w-[220px]"
           />
 
           {/* Title block */}
           <div className="flex-1">
             <h1 className="text-2xl font-black leading-tight md:text-4xl">
-              {movie.title}{" "}
+              {tv.name}{" "}
               {year && (
                 <span
                   className="font-light"
@@ -227,25 +227,26 @@ function MovieDetails() {
               )}
             </h1>
 
-            {movie.originalTitle &&
-              movie.originalTitle !== movie.title && (
-                <p
-                  className="mt-1 text-sm italic"
-                  style={{ color: palette.text.secondary }}
-                >
-                  Original Title: {movie.originalTitle}
-                </p>
-              )}
+            {tv.originalName && tv.originalName !== tv.name && (
+              <p
+                className="mt-1 text-sm italic"
+                style={{ color: palette.text.secondary }}
+              >
+                Original Title: {tv.originalName}
+              </p>
+            )}
 
             <div
               className="mt-2 flex flex-wrap items-center gap-2 text-sm"
               style={{ color: palette.text.secondary }}
             >
-              {movie.releaseDate && <span>{movie.releaseDate}</span>}
-              {movie.genres?.length > 0 && <span>•</span>}
-              {movie.genres?.slice(0, 3).join(", ")}
-              {movie.runtime ? <span>•</span> : null}
-              {movie.runtime ? <span>{movie.runtime}m</span> : null}
+              {tv.firstAirDate && <span>{tv.firstAirDate}</span>}
+              {tv.episodeRunTime?.length > 0 && <span>•</span>}
+              {tv.episodeRunTime?.length > 0 && (
+                <span>{tv.episodeRunTime[0]}m episodes</span>
+              )}
+              {tv.genres?.length > 0 && <span>•</span>}
+              {tv.genres?.slice(0, 3).join(", ")}
             </div>
 
             {/* Score + actions */}
@@ -275,12 +276,12 @@ function MovieDetails() {
                     <br />
                     Score
                   </span>
-                  {movie.voteCount ? (
+                  {tv.voteCount ? (
                     <span
                       className="text-xs"
                       style={{ color: palette.text.secondary }}
                     >
-                      ({movie.voteCount.toLocaleString()} votes)
+                      ({tv.voteCount.toLocaleString()} votes)
                     </span>
                   ) : null}
                 </div>
@@ -326,12 +327,12 @@ function MovieDetails() {
               )}
             </div>
 
-            {movie.tagline && (
+            {tv.tagline && (
               <p
                 className="mt-6 italic"
                 style={{ color: palette.text.secondary }}
               >
-                {movie.tagline}
+                {tv.tagline}
               </p>
             )}
 
@@ -340,7 +341,7 @@ function MovieDetails() {
               className="mt-1 max-w-3xl leading-7"
               style={{ color: palette.text.secondary }}
             >
-              {movie.overview}
+              {tv.overview}
             </p>
 
             {keyCrew.length > 0 && (
@@ -491,13 +492,42 @@ function MovieDetails() {
               </div>
             )}
 
+            {/* Seasons */}
+            {tv.seasons?.length > 0 && (
+              <div className="mt-14">
+                <h2 className="mb-5 text-2xl font-bold">Seasons</h2>
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+                  {tv.seasons.map((season) => (
+                    <div key={season.id}>
+                      <img
+                        src={season.posterUrl}
+                        alt={season.name}
+                        className="aspect-[2/3] w-full rounded-lg object-cover"
+                        style={{ backgroundColor: palette.background.paper }}
+                      />
+                      <h3 className="mt-2 text-sm font-semibold leading-tight">
+                        {season.name}
+                      </h3>
+                      <p
+                        className="text-xs leading-tight"
+                        style={{ color: palette.text.secondary }}
+                      >
+                        {season.episodeCount} episodes
+                        {season.airDate ? ` · ${season.airDate.slice(0, 4)}` : ""}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Recommendations */}
             {recommendations.length > 0 && (
               <div className="mt-14">
                 <MediaRow
                   title="More Like This"
                   items={recommendations}
-                  onItemClick={(item) => navigate(`/movies/${item.id}`)}
+                  onItemClick={(item) => navigate(`/tv/${item.id}`)}
                 />
               </div>
             )}
@@ -519,85 +549,122 @@ function MovieDetails() {
                 <a href="#" style={{ color: palette.text.secondary }}>
                   <SocialIcon path={ICONS.instagram} />
                 </a>
-                {movie.imdbId && (
-                  <a
-                    href={`https://www.imdb.com/title/${movie.imdbId}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="ml-auto text-xs font-bold"
-                    style={{ color: palette.warning.main }}
-                  >
-                    IMDb
-                  </a>
-                )}
               </div>
 
-              {movie.status && (
+              {tv.status && (
                 <div className="mb-4">
                   <h4 className="text-sm font-bold">Status</h4>
                   <p
                     className="text-sm"
                     style={{ color: palette.text.secondary }}
                   >
-                    {movie.status}
+                    {tv.status}
                   </p>
                 </div>
               )}
 
-              {movie.originalTitle &&
-                movie.originalTitle !== movie.title && (
-                  <div className="mb-4">
-                    <h4 className="text-sm font-bold">Original Title</h4>
-                    <p
-                      className="text-sm"
-                      style={{ color: palette.text.secondary }}
-                    >
-                      {movie.originalTitle}
-                    </p>
-                  </div>
-                )}
+              {tv.firstAirDate && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-bold">First Air Date</h4>
+                  <p
+                    className="text-sm"
+                    style={{ color: palette.text.secondary }}
+                  >
+                    {tv.firstAirDate}
+                  </p>
+                </div>
+              )}
 
-              {movie.voteCount ? (
+              {tv.lastAirDate && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-bold">Last Air Date</h4>
+                  <p
+                    className="text-sm"
+                    style={{ color: palette.text.secondary }}
+                  >
+                    {tv.lastAirDate}
+                  </p>
+                </div>
+              )}
+
+              {(tv.numberOfSeasons || tv.numberOfEpisodes) && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-bold">Seasons / Episodes</h4>
+                  <p
+                    className="text-sm"
+                    style={{ color: palette.text.secondary }}
+                  >
+                    {tv.numberOfSeasons ?? "-"} seasons ·{" "}
+                    {tv.numberOfEpisodes ?? "-"} episodes
+                  </p>
+                </div>
+              )}
+
+              {tv.networks?.length > 0 && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-bold">Network</h4>
+                  <p
+                    className="text-sm"
+                    style={{ color: palette.text.secondary }}
+                  >
+                    {tv.networks.map((n) => n.name).join(", ")}
+                  </p>
+                </div>
+              )}
+
+              {tv.originCountry?.length > 0 && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-bold">Origin Country</h4>
+                  <p
+                    className="text-sm"
+                    style={{ color: palette.text.secondary }}
+                  >
+                    {tv.originCountry.join(", ")}
+                  </p>
+                </div>
+              )}
+
+              {tv.voteCount ? (
                 <div className="mb-4">
                   <h4 className="text-sm font-bold">Vote Count</h4>
                   <p
                     className="text-sm"
                     style={{ color: palette.text.secondary }}
                   >
-                    {movie.voteCount.toLocaleString()}
+                    {tv.voteCount.toLocaleString()}
                   </p>
                 </div>
               ) : null}
 
-              {movie.originalLanguage && (
+              {tv.originalLanguage && (
                 <div className="mb-4">
                   <h4 className="text-sm font-bold">Original Language</h4>
                   <p
                     className="text-sm uppercase"
                     style={{ color: palette.text.secondary }}
                   >
-                    {movie.originalLanguage}
+                    {tv.originalLanguage}
                   </p>
                 </div>
               )}
 
-              {directorNames && (
+              {creatorNames && (
                 <div className="mb-4">
-                  <h4 className="text-sm font-bold">Director</h4>
+                  <h4 className="text-sm font-bold">Created By</h4>
                   <p
                     className="text-sm"
                     style={{ color: palette.text.secondary }}
                   >
-                    {directorNames}
+                    {creatorNames}
                   </p>
                 </div>
               )}
 
-              {movie.genres?.length > 0 && (
+              {tv.genres?.length > 0 && (
                 <div>
                   <h4 className="mb-2 text-sm font-bold">Genres</h4>
                   <div className="flex flex-wrap gap-2">
-                    {movie.genres.map((genre) => (
+                    {tv.genres.map((genre) => (
                       <span
                         key={genre}
                         className="rounded-full px-3 py-1 text-xs"
@@ -620,4 +687,4 @@ function MovieDetails() {
   );
 }
 
-export default MovieDetails;
+export default TVDetails;

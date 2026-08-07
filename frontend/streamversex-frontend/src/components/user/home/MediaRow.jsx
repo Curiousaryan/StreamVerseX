@@ -36,11 +36,18 @@ function MediaRow({
   // ==========================
   // Infinite Items
   // ==========================
+  // Repeat the list enough times so the strip is always wider than
+  // the viewport (now that the row spans full page width) — otherwise
+  // a short recommendation list leaves a dead gap at the end and the
+  // seamless-loop math breaks. Repeat count is kept even so the
+  // scrollWidth/2 reset below always lands on an exact item boundary.
 
-  const loopItems = [
-    ...items,
-    ...items,
-  ];
+  let repeatCount = 2;
+  while (items.length > 0 && items.length * repeatCount < 14) {
+    repeatCount += 2;
+  }
+
+  const loopItems = Array.from({ length: repeatCount }, () => items).flat();
 
   // ==========================
   // GPU Smooth Auto Scroll

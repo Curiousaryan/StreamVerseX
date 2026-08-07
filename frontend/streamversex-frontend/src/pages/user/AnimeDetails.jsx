@@ -6,6 +6,7 @@ import {
   Heart,
   Plus,
   Share2,
+  ExternalLink,
 } from "lucide-react";
 
 const SocialIcon = ({ path, ...props }) => (
@@ -34,15 +35,14 @@ import MediaRow from "../../components/user/home/MediaRow";
 import palette from "../../theme/palette";
 
 import {
-  getMovieDetails,
-  getMovieCredits,
-  getMovieVideos,
-  getMovieRecommendations,
-} from "../../services/movieService";
+  getAnimeDetails,
+  getAnimeCharacters,
+  getAnimeRecommendations,
+} from "../../services/animeService";
 
-import { normalizeMovie } from "../../services/homeService";
+import { normalizeAnime } from "../../services/homeService";
 
-function MovieDetails() {
+function AnimeDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -53,51 +53,41 @@ function MovieDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const [movie, setMovie] = useState(null);
-  const [cast, setCast] = useState([]);
-  const [crew, setCrew] = useState([]);
-  const [videos, setVideos] = useState([]);
+  const [anime, setAnime] = useState(null);
+  const [characters, setCharacters] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
-  const [activeVideo, setActiveVideo] = useState(null);
 
   /* ==========================================
       LOAD DATA
   ========================================== */
 
-  const loadMovie = async () => {
+  const loadAnime = async () => {
     try {
       setLoading(true);
       setError("");
 
-      const [movieData, creditsData, videosData, recommendationsData] =
+      const [animeData, charactersData, recommendationsData] =
         await Promise.all([
-          getMovieDetails(id),
-          getMovieCredits(id),
-          getMovieVideos(id),
-          getMovieRecommendations(id),
+          getAnimeDetails(id),
+          getAnimeCharacters(id),
+          getAnimeRecommendations(id),
         ]);
 
-      setMovie(movieData);
-      setCast(creditsData?.cast || []);
-      setCrew(creditsData?.crew || []);
-      const vids = videosData || [];
-      setVideos(vids);
-      const firstTrailer =
-        vids.find((v) => v.site === "YouTube" && v.type === "Trailer") ||
-        vids[0] ||
-        null;
-      setActiveVideo(firstTrailer);
-      setRecommendations((recommendationsData || []).map(normalizeMovie));
+      setAnime(animeData);
+      setCharacters(charactersData || []);
+      setRecommendations(
+        (recommendationsData || []).map(normalizeAnime)
+      );
     } catch (err) {
       console.error(err);
-      setError("Unable to load movie details.");
+      setError("Unable to load anime details.");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadMovie();
+    loadAnime();
   }, [id]);
 
   /* ==========================================
@@ -113,12 +103,12 @@ function MovieDetails() {
           color: palette.text.primary,
         }}
       >
-        <h2 className="text-2xl font-semibold">Loading Movie...</h2>
+        <h2 className="text-2xl font-semibold">Loading Anime...</h2>
       </main>
     );
   }
 
-  if (error || !movie) {
+  if (error || !anime) {
     return (
       <main
         className="flex min-h-screen items-center justify-center"
@@ -129,7 +119,7 @@ function MovieDetails() {
             className="text-3xl font-bold"
             style={{ color: palette.error.main }}
           >
-            Unable to Load Movie
+            Unable to Load Anime
           </h2>
           <p className="mt-4" style={{ color: palette.text.secondary }}>
             {error}
@@ -143,21 +133,22 @@ function MovieDetails() {
       DERIVED VALUES
   ========================================== */
 
-  const year = movie.releaseDate ? movie.releaseDate.slice(0, 4) : "";
-  const scorePct = movie.rating ? Math.round(movie.rating * 10) : null;
+  const displayTitle = anime.title || anime.englishTitle;
+  const year = anime.seasonYear || (anime.startDate?.split("-")[0] ?? "");
+  const scorePct = anime.averageScore ?? null;
 
-  const keyCrew = crew.filter((c) =>
-    ["Director", "Writer", "Screenplay", "Story", "Producer"].includes(c.job)
-  );
+  const studioNames = (anime.studios || [])
+    .filter((s) => s.animationStudio)
+    .map((s) => s.name)
+    .join(", ") ||
+    (anime.studios || []).map((s) => s.name).join(", ");
 
-  const directorNames = crew
-    .filter((c) => c.job === "Director")
-    .map((c) => c.name)
-    .join(", ");
+  const trailer = anime.trailer;
 
-  const trailer = videos.find(
-    (v) => v.site === "YouTube" && v.type === "Trailer"
-  ) || videos[0];
+  const seasonLabel =
+    anime.season && anime.seasonYear
+      ? `${anime.season.charAt(0)}${anime.season.slice(1).toLowerCase()} ${anime.seasonYear}`
+      : anime.seasonYear || "";
 
   /* ==========================================
       UI
@@ -177,16 +168,16 @@ function MovieDetails() {
 
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
-          {movie.backdropUrl || movie.posterUrl ? (
+          {anime.bannerImageUrl || anime.coverImageUrl ? (
             <img
-              src={movie.backdropUrl || movie.posterUrl}
-              alt={movie.title}
+              src={anime.bannerImageUrl || anime.coverImageUrl}
+              alt={displayTitle}
               className="h-full w-full object-cover"
               style={{
-                filter: movie.backdropUrl
+                filter: anime.bannerImageUrl
                   ? "brightness(.55) blur(0px)"
                   : "brightness(.2) blur(20px) saturate(1.3)",
-                transform: movie.backdropUrl ? "none" : "scale(1.2)",
+                transform: anime.bannerImageUrl ? "none" : "scale(1.2)",
               }}
             />
           ) : (
@@ -208,15 +199,15 @@ function MovieDetails() {
         <div className="relative z-10 flex w-full flex-col gap-6 px-6 py-10 md:flex-row md:px-10 lg:px-14">
           {/* Poster */}
           <img
-            src={movie.posterUrl}
-            alt={movie.title}
+            src={anime.coverImageUrl}
+            alt={displayTitle}
             className="h-[270px] w-[180px] flex-shrink-0 rounded-xl object-cover shadow-2xl md:h-[330px] md:w-[220px]"
           />
 
           {/* Title block */}
           <div className="flex-1">
             <h1 className="text-2xl font-black leading-tight md:text-4xl">
-              {movie.title}{" "}
+              {displayTitle}{" "}
               {year && (
                 <span
                   className="font-light"
@@ -227,25 +218,37 @@ function MovieDetails() {
               )}
             </h1>
 
-            {movie.originalTitle &&
-              movie.originalTitle !== movie.title && (
-                <p
-                  className="mt-1 text-sm italic"
-                  style={{ color: palette.text.secondary }}
-                >
-                  Original Title: {movie.originalTitle}
-                </p>
-              )}
+            {anime.nativeTitle && anime.nativeTitle !== displayTitle && (
+              <p
+                className="mt-1 text-sm italic"
+                style={{ color: palette.text.secondary }}
+              >
+                Native Title: {anime.nativeTitle}
+              </p>
+            )}
+
+            {anime.synonyms?.length > 0 && (
+              <p
+                className="mt-1 text-xs"
+                style={{ color: palette.text.secondary }}
+              >
+                Also known as: {anime.synonyms.join(", ")}
+              </p>
+            )}
 
             <div
               className="mt-2 flex flex-wrap items-center gap-2 text-sm"
               style={{ color: palette.text.secondary }}
             >
-              {movie.releaseDate && <span>{movie.releaseDate}</span>}
-              {movie.genres?.length > 0 && <span>•</span>}
-              {movie.genres?.slice(0, 3).join(", ")}
-              {movie.runtime ? <span>•</span> : null}
-              {movie.runtime ? <span>{movie.runtime}m</span> : null}
+              {anime.startDate && <span>{anime.startDate}</span>}
+              {anime.format ? <span>•</span> : null}
+              {anime.format && <span>{anime.format}</span>}
+              {anime.episodes ? <span>•</span> : null}
+              {anime.episodes ? <span>{anime.episodes} eps</span> : null}
+              {anime.duration ? <span>•</span> : null}
+              {anime.duration ? <span>{anime.duration}m</span> : null}
+              {anime.genres?.length > 0 && <span>•</span>}
+              {anime.genres?.slice(0, 3).join(", ")}
             </div>
 
             {/* Score + actions */}
@@ -271,16 +274,16 @@ function MovieDetails() {
                     className="text-sm font-semibold"
                     style={{ color: palette.text.secondary }}
                   >
-                    User
+                    Average
                     <br />
                     Score
                   </span>
-                  {movie.voteCount ? (
+                  {anime.favourites ? (
                     <span
                       className="text-xs"
                       style={{ color: palette.text.secondary }}
                     >
-                      ({movie.voteCount.toLocaleString()} votes)
+                      ({anime.favourites.toLocaleString()} favourites)
                     </span>
                   ) : null}
                 </div>
@@ -310,7 +313,7 @@ function MovieDetails() {
                 <Share2 size={18} />
               </button>
 
-              {trailer && (
+              {trailer?.videoUrl && (
                 <button
                   className="flex items-center gap-2 rounded-full px-5 py-3 font-semibold transition hover:scale-105"
                   style={{ backgroundColor: palette.primary.main }}
@@ -326,40 +329,28 @@ function MovieDetails() {
               )}
             </div>
 
-            {movie.tagline && (
-              <p
-                className="mt-6 italic"
-                style={{ color: palette.text.secondary }}
-              >
-                {movie.tagline}
-              </p>
-            )}
-
             <h3 className="mt-4 text-lg font-bold">Overview</h3>
             <p
               className="mt-1 max-w-3xl leading-7"
-              style={{ color: palette.text.secondary }}
-            >
-              {movie.overview}
-            </p>
+              style={{
+                color: palette.text.secondary,
+              }}
+              dangerouslySetInnerHTML={{
+                __html: anime.description || "",
+              }}
+            />
 
-            {keyCrew.length > 0 && (
+            {studioNames && (
               <div className="mt-6 flex flex-wrap gap-x-10 gap-y-3">
-                {keyCrew.slice(0, 4).map((person) => (
-                  <button
-                    key={`${person.id}-${person.job}`}
-                    onClick={() => navigate(`/person/${person.id}`)}
-                    className="text-left transition hover:opacity-80"
+                <div className="text-left">
+                  <p className="font-semibold">{studioNames}</p>
+                  <p
+                    className="text-sm"
+                    style={{ color: palette.text.secondary }}
                   >
-                    <p className="font-semibold">{person.name}</p>
-                    <p
-                      className="text-sm"
-                      style={{ color: palette.text.secondary }}
-                    >
-                      {person.job}
-                    </p>
-                  </button>
-                ))}
+                    Studio
+                  </p>
+                </div>
               </div>
             )}
           </div>
@@ -374,120 +365,90 @@ function MovieDetails() {
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-3">
           {/* LEFT / MAIN COLUMN */}
           <div className="lg:col-span-2">
-            {/* Cast */}
-            {cast.length > 0 && (
+            {/* Characters */}
+            {characters.length > 0 && (
               <div>
-                <h2 className="mb-5 text-2xl font-bold">Top Billed Cast</h2>
+                <h2 className="mb-5 text-2xl font-bold">Characters</h2>
                 <div className="grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-5">
-                  {cast.slice(0, 10).map((person) => (
-                    <button
-                      key={person.id}
-                      onClick={() => navigate(`/person/${person.id}`)}
-                      className="text-left transition hover:opacity-80"
-                    >
-                      <img
-                        src={person.profileUrl}
-                        alt={person.name}
-                        className="aspect-[2/3] w-full rounded-lg object-cover"
-                        style={{ backgroundColor: palette.background.paper }}
-                      />
-                      <h3 className="mt-2 text-sm font-semibold leading-tight">
-                        {person.name}
-                      </h3>
-                      <p
-                        className="text-xs leading-tight"
-                        style={{ color: palette.text.secondary }}
+                  {characters.slice(0, 10).map((character) => {
+                    const voiceActor = character.voiceActors?.[0];
+                    return (
+                      <a
+                        key={character.id}
+                        href={character.siteUrl || "#"}
+                        target={character.siteUrl ? "_blank" : undefined}
+                        rel={character.siteUrl ? "noreferrer" : undefined}
+                        className="text-left transition hover:opacity-80"
                       >
-                        {person.character}
-                      </p>
-                    </button>
-                  ))}
+                        <img
+                          src={character.imageUrl}
+                          alt={character.name}
+                          className="aspect-[2/3] w-full rounded-lg object-cover"
+                          style={{ backgroundColor: palette.background.paper }}
+                        />
+                        <h3 className="mt-2 text-sm font-semibold leading-tight">
+                          {character.name}
+                        </h3>
+                        <p
+                          className="text-xs leading-tight"
+                          style={{ color: palette.text.secondary }}
+                        >
+                          {character.role}
+                        </p>
+                        {voiceActor && (
+                          <p
+                            className="mt-1 text-xs leading-tight italic"
+                            style={{ color: palette.text.secondary }}
+                          >
+                            {voiceActor.name}
+                          </p>
+                        )}
+                      </a>
+                    );
+                  })}
                 </div>
               </div>
             )}
 
-            {/* Videos */}
-            {activeVideo && (
+            {/* Trailer */}
+            {trailer?.videoUrl && (
               <div id="trailer-section" className="mt-14">
-                <h2 className="mb-5 text-2xl font-bold">Videos</h2>
+                <h2 className="mb-5 text-2xl font-bold">Trailer</h2>
 
                 <div
                   className="overflow-hidden rounded-2xl shadow-2xl"
                   style={{ backgroundColor: palette.background.paper }}
                 >
                   <div className="relative w-full" style={{ paddingTop: "56.25%" }}>
-                    <iframe
-                      className="absolute inset-0 h-full w-full"
-                      src={`https://www.youtube.com/embed/${activeVideo.key}`}
-                      title={activeVideo.name || "Video"}
-                      allowFullScreen
-                    />
+                    {trailer.site === "youtube" || trailer.site === "YouTube" ? (
+                      <iframe
+                        className="absolute inset-0 h-full w-full"
+                        src={`https://www.youtube.com/embed/${trailer.id}`}
+                        title={displayTitle}
+                        allowFullScreen
+                      />
+                    ) : (
+                      <a
+                        href={trailer.videoUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="absolute inset-0 flex h-full w-full items-center justify-center"
+                      >
+                        <img
+                          src={trailer.thumbnailUrl}
+                          alt={displayTitle}
+                          className="absolute inset-0 h-full w-full object-cover"
+                        />
+                        <Play
+                          size={64}
+                          fill="currentColor"
+                          style={{ color: palette.text.primary }}
+                          className="relative z-10"
+                        />
+                      </a>
+                    )}
                   </div>
                 </div>
-
-                {videos.length > 1 && (
-                  <div className="mt-4 flex gap-4 overflow-x-auto pb-2">
-                    {videos.map((v) => {
-                      const isActive = v.id === activeVideo.id;
-                      return (
-                        <button
-                          key={v.id}
-                          onClick={() => setActiveVideo(v)}
-                          className="group flex-shrink-0 text-left"
-                          style={{ width: 220 }}
-                        >
-                          <div
-                            className="relative overflow-hidden rounded-lg"
-                            style={{
-                              outline: isActive
-                                ? `2px solid ${palette.primary.main}`
-                                : "2px solid transparent",
-                            }}
-                          >
-                            <img
-                              src={`https://img.youtube.com/vi/${v.key}/hqdefault.jpg`}
-                              alt={v.name}
-                              className="aspect-video w-full object-cover transition group-hover:opacity-80"
-                              style={{ backgroundColor: palette.background.paper }}
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <Play
-                                size={28}
-                                fill="currentColor"
-                                style={{
-                                  color: isActive
-                                    ? palette.primary.main
-                                    : palette.text.primary,
-                                }}
-                              />
-                            </div>
-                            {v.type && (
-                              <span
-                                className="absolute left-2 top-2 rounded px-2 py-0.5 text-[10px] font-bold uppercase"
-                                style={{
-                                  backgroundColor: "rgba(0,0,0,0.7)",
-                                  color: palette.text.primary,
-                                }}
-                              >
-                                {v.type}
-                              </span>
-                            )}
-                          </div>
-                          <p
-                            className="mt-1 truncate text-xs"
-                            style={{
-                              color: isActive
-                                ? palette.text.primary
-                                : palette.text.secondary,
-                            }}
-                          >
-                            {v.name}
-                          </p>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
               </div>
             )}
 
@@ -497,7 +458,7 @@ function MovieDetails() {
                 <MediaRow
                   title="More Like This"
                   items={recommendations}
-                  onItemClick={(item) => navigate(`/movies/${item.id}`)}
+                  onItemClick={(item) => navigate(`/anime/${item.id}`)}
                 />
               </div>
             )}
@@ -519,85 +480,157 @@ function MovieDetails() {
                 <a href="#" style={{ color: palette.text.secondary }}>
                   <SocialIcon path={ICONS.instagram} />
                 </a>
-                {movie.imdbId && (
+                {anime.siteUrl && (
                   <a
-                    href={`https://www.imdb.com/title/${movie.imdbId}`}
+                    href={anime.siteUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="ml-auto text-xs font-bold"
+                    className="ml-auto flex items-center gap-1 text-xs font-bold"
                     style={{ color: palette.warning.main }}
                   >
-                    IMDb
+                    AniList <ExternalLink size={12} />
                   </a>
                 )}
               </div>
 
-              {movie.status && (
+              {anime.status && (
                 <div className="mb-4">
                   <h4 className="text-sm font-bold">Status</h4>
                   <p
                     className="text-sm"
                     style={{ color: palette.text.secondary }}
                   >
-                    {movie.status}
+                    {anime.status}
                   </p>
                 </div>
               )}
 
-              {movie.originalTitle &&
-                movie.originalTitle !== movie.title && (
-                  <div className="mb-4">
-                    <h4 className="text-sm font-bold">Original Title</h4>
-                    <p
-                      className="text-sm"
-                      style={{ color: palette.text.secondary }}
-                    >
-                      {movie.originalTitle}
-                    </p>
-                  </div>
-                )}
-
-              {movie.voteCount ? (
+              {anime.format && (
                 <div className="mb-4">
-                  <h4 className="text-sm font-bold">Vote Count</h4>
+                  <h4 className="text-sm font-bold">Format</h4>
                   <p
                     className="text-sm"
                     style={{ color: palette.text.secondary }}
                   >
-                    {movie.voteCount.toLocaleString()}
+                    {anime.format}
+                  </p>
+                </div>
+              )}
+
+              {anime.source && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-bold">Source</h4>
+                  <p
+                    className="text-sm"
+                    style={{ color: palette.text.secondary }}
+                  >
+                    {anime.source}
+                  </p>
+                </div>
+              )}
+
+              {(anime.episodes || anime.duration) && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-bold">Episodes / Duration</h4>
+                  <p
+                    className="text-sm"
+                    style={{ color: palette.text.secondary }}
+                  >
+                    {anime.episodes ?? "-"} episodes
+                    {anime.duration ? ` · ${anime.duration}m each` : ""}
+                  </p>
+                </div>
+              )}
+
+              {seasonLabel && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-bold">Season</h4>
+                  <p
+                    className="text-sm"
+                    style={{ color: palette.text.secondary }}
+                  >
+                    {seasonLabel}
+                  </p>
+                </div>
+              )}
+
+              {anime.startDate && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-bold">Start Date</h4>
+                  <p
+                    className="text-sm"
+                    style={{ color: palette.text.secondary }}
+                  >
+                    {anime.startDate}
+                  </p>
+                </div>
+              )}
+
+              {anime.endDate && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-bold">End Date</h4>
+                  <p
+                    className="text-sm"
+                    style={{ color: palette.text.secondary }}
+                  >
+                    {anime.endDate}
+                  </p>
+                </div>
+              )}
+
+              {anime.countryOfOrigin && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-bold">Country of Origin</h4>
+                  <p
+                    className="text-sm"
+                    style={{ color: palette.text.secondary }}
+                  >
+                    {anime.countryOfOrigin}
+                  </p>
+                </div>
+              )}
+
+              {anime.popularity ? (
+                <div className="mb-4">
+                  <h4 className="text-sm font-bold">Popularity</h4>
+                  <p
+                    className="text-sm"
+                    style={{ color: palette.text.secondary }}
+                  >
+                    {anime.popularity.toLocaleString()}
                   </p>
                 </div>
               ) : null}
 
-              {movie.originalLanguage && (
+              {anime.meanScore ? (
                 <div className="mb-4">
-                  <h4 className="text-sm font-bold">Original Language</h4>
-                  <p
-                    className="text-sm uppercase"
-                    style={{ color: palette.text.secondary }}
-                  >
-                    {movie.originalLanguage}
-                  </p>
-                </div>
-              )}
-
-              {directorNames && (
-                <div className="mb-4">
-                  <h4 className="text-sm font-bold">Director</h4>
+                  <h4 className="text-sm font-bold">Mean Score</h4>
                   <p
                     className="text-sm"
                     style={{ color: palette.text.secondary }}
                   >
-                    {directorNames}
+                    {anime.meanScore}%
+                  </p>
+                </div>
+              ) : null}
+
+              {studioNames && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-bold">Studios</h4>
+                  <p
+                    className="text-sm"
+                    style={{ color: palette.text.secondary }}
+                  >
+                    {studioNames}
                   </p>
                 </div>
               )}
 
-              {movie.genres?.length > 0 && (
+              {anime.genres?.length > 0 && (
                 <div>
                   <h4 className="mb-2 text-sm font-bold">Genres</h4>
                   <div className="flex flex-wrap gap-2">
-                    {movie.genres.map((genre) => (
+                    {anime.genres.map((genre) => (
                       <span
                         key={genre}
                         className="rounded-full px-3 py-1 text-xs"
@@ -620,4 +653,4 @@ function MovieDetails() {
   );
 }
 
-export default MovieDetails;
+export default AnimeDetails;
