@@ -10,7 +10,7 @@ import {
   getTopRatedMovies,
   getUpcomingMovies,
   getNowPlayingMovies,
-} from "../../services/movieService";
+} from "../../services/media/movieService";
 
 import { normalizeMovie } from "../../services/homeService";
 

@@ -15,7 +15,6 @@ function MediaRow({
   title,
   items = [],
   onItemClick,
-  onAddWatchlist,
   onViewAll,
 }) {
   const rowRef = useRef(null);
@@ -252,6 +251,7 @@ function MediaRow({
             "
           >
             <MediaCard
+              id={item.id}
               title={item.title}
               image={item.poster}
               rating={item.rating}

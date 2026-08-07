@@ -8,6 +8,8 @@ import App from "./App";
 import theme from "./theme/theme";
 
 import { AuthProvider } from "./context/AuthContext";
+import { WatchlistProvider } from "./context/WatchlistContext";
+import { Toaster } from "react-hot-toast";
 
 import "./index.css";
 
@@ -18,9 +20,33 @@ ReactDOM.createRoot(document.getElementById("root")).render(
 
       <BrowserRouter>
         <AuthProvider>
-          <App />
+          <WatchlistProvider>
+             <Toaster
+      position="bottom-right"
+      reverseOrder={false}
+      toastOptions={{
+        duration: 2500,
+
+        style: {
+          background: "#111111",
+          color: "#ffffff",
+          border: "1px solid #27272a",
+          borderRadius: "14px",
+        },
+
+        success: {
+          iconTheme: {
+            primary: "#dc2626",
+            secondary: "#ffffff",
+          },
+        },
+      }}
+    />
+            <App />
+          </WatchlistProvider>
         </AuthProvider>
       </BrowserRouter>
+
     </ThemeProvider>
   </React.StrictMode>
 );

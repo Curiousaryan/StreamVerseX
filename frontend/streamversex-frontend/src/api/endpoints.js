@@ -7,6 +7,8 @@ export const ENDPOINTS = {
     REGISTER: "/auth/register",
     FORGOT_PASSWORD: "/auth/forgot-password",
     RESET_PASSWORD: "/auth/reset-password",
+    CHANGE_PASSWORD: "/api/auth/change-password",
+    VERIFY_EMAIL: "/api/auth/verify-email",
   },
 
   /* =====================================================
@@ -106,6 +108,7 @@ export const ENDPOINTS = {
   PROFILE: {
     ME: "/api/profile/me",
     UPDATE: "/api/profile",
+    UPLOAD_IMAGE: "/api/profile/image",
   },
 
   /* =====================================================
@@ -131,5 +134,70 @@ export const ENDPOINTS = {
   PAYMENTS: {
     HISTORY: "/api/payments",
     DETAILS: (id) => `/api/payments/${id}`,
+  },
+  /* =====================================================================
+   PASTE THIS BLOCK INSIDE THE EXISTING `ENDPOINTS` OBJECT IN
+   src/api/endpoints.js  (add it as a new top-level key, e.g. right
+   after PAYMENTS, before the closing `};` of ENDPOINTS)
+===================================================================== */
+
+  /* =====================================================
+     ADMIN — DASHBOARD
+  ===================================================== */
+  ADMIN_DASHBOARD_API: {
+    OVERVIEW: "/api/admin/dashboard",
+  },
+
+  /* =====================================================
+     ADMIN — USERS
+  ===================================================== */
+  ADMIN_USERS: {
+    ALL: "/api/admin/users",
+    DETAILS: (userId) => `/api/admin/users/${userId}`,
+    SEARCH: "/api/admin/users/search",
+    BLOCK: (userId) => `/api/admin/users/${userId}/block`,
+    UNBLOCK: (userId) => `/api/admin/users/${userId}/unblock`,
+  },
+
+  /* =====================================================
+     ADMIN — REVIEWS
+  ===================================================== */
+  ADMIN_REVIEWS: {
+    ALL: "/api/admin/reviews",
+    SEARCH: "/api/admin/reviews/search",
+    DELETE: (reviewId) => `/api/admin/reviews/${reviewId}`,
+  },
+
+  /* =====================================================
+     ADMIN — PREMIUM USERS
+  ===================================================== */
+  ADMIN_PREMIUM_USERS: {
+    ALL: "/api/admin/premium-users",
+    SEARCH: "/api/admin/premium-users/search",
+    EXPIRING: "/api/admin/premium-users/expiring",
+    EXPIRE: (userId) => `/api/admin/premium-users/${userId}/expire`,
+  },
+
+  /* =====================================================
+     ADMIN — PAYMENTS
+  ===================================================== */
+  ADMIN_PAYMENTS: {
+    ALL: "/api/admin/payments",
+    DETAILS: (paymentId) => `/api/admin/payments/${paymentId}`,
+    BY_STATUS: "/api/admin/payments/status",
+    SEARCH: "/api/admin/payments/search",
+  },
+
+  /* =====================================================
+     ADMIN — ANALYTICS
+  ===================================================== */
+  ADMIN_ANALYTICS: {
+    USERS: "/api/admin/analytics/users",
+    TOP_WATCHLIST: "/api/admin/analytics/top-watchlist",
+    TOP_REVIEWED: "/api/admin/analytics/top-reviewed",
+    TOP_FAVORITES: "/api/admin/analytics/top-favorites",
+    REVENUE: "/api/admin/analytics/revenue",
+    PAYMENTS: "/api/admin/analytics/payments",
+    CONTENT: "/api/admin/analytics/content",
   },
 };
