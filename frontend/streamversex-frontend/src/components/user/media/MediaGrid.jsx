@@ -4,7 +4,6 @@ function MediaGrid({
   items = [],
   mediaType = "Movie",
   onItemClick,
-  onAddWatchlist,
   emptyMessage = "No content available.",
 }) {
   if (!items || items.length === 0) {
@@ -30,8 +29,9 @@ function MediaGrid({
       "
     >
       {items.map((movie) => (
-        <MediaCard
+      <MediaCard
           key={movie.id}
+          id={movie.id}
           title={movie.title}
           image={movie.posterUrl}
           rating={movie.rating}
@@ -42,9 +42,6 @@ function MediaGrid({
           }
           mediaType={mediaType}
           onClick={() => onItemClick?.(movie)}
-          onAddWatchlist={() =>
-            onAddWatchlist?.(movie)
-          }
         />
       ))}
     </div>

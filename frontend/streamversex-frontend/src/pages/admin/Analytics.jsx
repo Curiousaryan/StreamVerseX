@@ -1,17 +1,16 @@
-// src/pages/admin/AdminDashboard.jsx
+// src/pages/admin/Analytics.jsx
 import { Grid } from "@mui/material";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+
 import PageHeader from "../../components/admin/layout/PageHeader";
-import DashboardStats from "../../components/admin/dashboard/DashboardStats";
 import RevenueChart from "../../components/admin/dashboard/RevenueChart";
 import UserGrowthChart from "../../components/admin/dashboard/UserGrowthChart";
 import ContentChart from "../../components/admin/dashboard/ContentChart";
 import PaymentChart from "../../components/admin/dashboard/PaymentChart";
 import TopContentChart from "../../components/admin/dashboard/TopContentChart";
-import RecentActivity from "../../components/admin/dashboard/RecentActivity";
+
 import {
-  getAdminDashboard,
   getUserAnalytics,
   getRevenueAnalytics,
   getPaymentAnalytics,
@@ -22,23 +21,15 @@ import {
 } from "../../services/adminService";
 
 /**
- * GET /api/admin/dashboard only returns flat totals (confirmed shape):
- *   { totalUsers, activeUsers, blockedUsers, premiumUsers, totalPayments,
- *     successfulPayments, failedPayments, totalRevenue, monthlyRevenue,
- *     totalReviews, totalFavorites, totalWatchlistItems }
+ * Deep analytics page — one dedicated chart per /api/admin/analytics/*
+ * endpoint, plus the tabbed "Top Content" breakdown.
  *
- * There's no time-series data in it, so the trend charts (revenue over
- * time, user growth, content split, payment status split) are fed by the
- * dedicated /api/admin/analytics/* endpoints instead — that's what they're
- * for. Each chart component still defends against `undefined`/empty
- * arrays, so nothing breaks if a given analytics endpoint returns a shape
- * you haven't told me about yet — just swap the `mapX` functions below
- * once you confirm those response shapes too.
+ * Same disclaimer as AdminDashboard.jsx: exact response shapes for these
+ * 7 endpoints weren't in your screenshots, so each map* function below
+ * guesses common key names with fallbacks. Send me one real response per
+ * endpoint (like you did for /api/admin/dashboard) and I'll tighten these
+ * in under a minute each — nothing else in the page needs to change.
  */
-
-// Best-effort mappers — adjust once you confirm each analytics endpoint's
-// exact response shape. They accept common alternate key names so a lot of
-// real backends will "just work" without edits.
 const mapRevenueTrend = (res) =>
   (res?.trend ?? res?.data ?? res ?? []).map((r) => ({
     label: r.label ?? r.month ?? r.period ?? r.date,
@@ -70,27 +61,12 @@ const mapTopList = (res) =>
     value: r.count ?? r.value ?? 0,
   }));
 
-export default function AdminDashboard() {
-  const [stats, setStats] = useState(null);
-  const [statsLoading, setStatsLoading] = useState(true);
-
+export default function Analytics() {
+  const [loading, setLoading] = useState(true);
   const [charts, setCharts] = useState({});
-  const [chartsLoading, setChartsLoading] = useState(true);
 
-  const [topData, setTopData] = useState({});
   const [topLoading, setTopLoading] = useState(true);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        setStats(await getAdminDashboard());
-      } catch (err) {
-        toast.error(err.friendlyMessage ?? "Failed to load dashboard stats");
-      } finally {
-        setStatsLoading(false);
-      }
-    })();
-  }, []);
+  const [topData, setTopData] = useState({});
 
   useEffect(() => {
     (async () => {
@@ -110,7 +86,7 @@ export default function AdminDashboard() {
       } catch (err) {
         toast.error(err.friendlyMessage ?? "Failed to load analytics");
       } finally {
-        setChartsLoading(false);
+        setLoading(false);
       }
     })();
   }, []);
@@ -139,35 +115,28 @@ export default function AdminDashboard() {
   return (
     <>
       <PageHeader
-        title="Dashboard"
-        subtitle="Platform overview and key metrics"
-        breadcrumbItems={[{ label: "Admin", path: "/admin/dashboard" }, { label: "Dashboard" }]}
+        title="Analytics"
+        subtitle="Deep dive into revenue, users, payments and content performance"
+        breadcrumbItems={[{ label: "Admin", path: "/admin/dashboard" }, { label: "Analytics" }]}
       />
 
       <Grid container spacing={2.5}>
-        <Grid size={12}>
-          <DashboardStats data={stats} loading={statsLoading} />
-        </Grid>
-
         <Grid size={{ xs: 12, lg: 8 }}>
-          <RevenueChart data={charts.revenueTrend ?? []} loading={chartsLoading} />
+          <RevenueChart data={charts.revenueTrend ?? []} loading={loading} />
         </Grid>
         <Grid size={{ xs: 12, lg: 4 }}>
-          <ContentChart data={charts.contentDistribution ?? []} loading={chartsLoading} />
+          <ContentChart data={charts.contentDistribution ?? []} loading={loading} />
         </Grid>
 
         <Grid size={{ xs: 12, lg: 6 }}>
-          <UserGrowthChart data={charts.userGrowth ?? []} loading={chartsLoading} />
+          <UserGrowthChart data={charts.userGrowth ?? []} loading={loading} />
         </Grid>
         <Grid size={{ xs: 12, lg: 6 }}>
-          <PaymentChart data={charts.paymentsByStatus ?? []} loading={chartsLoading} />
+          <PaymentChart data={charts.paymentsByStatus ?? []} loading={loading} />
         </Grid>
 
-        <Grid size={{ xs: 12, lg: 7 }}>
+        <Grid size={12}>
           <TopContentChart datasets={topData} loading={topLoading} />
-        </Grid>
-        <Grid size={{ xs: 12, lg: 5 }}>
-          <RecentActivity items={[]} loading={false} />
         </Grid>
       </Grid>
     </>

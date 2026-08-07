@@ -7,10 +7,17 @@ import TrailerModal from "../../components/common/TrailerModal";
 
 import { ROUTES } from "../../routes/routeConstants";
 import { getHomePageData } from "../../services/homeService";
-import { getTrailerKeyForItem } from "../../services/trailerService";
+import { useWatchlist } from "../../context/WatchlistContext";
+
+const CONTENT_TYPE = {
+  Movie: "MOVIE",
+  TV: "TV",
+  Anime: "ANIME",
+};
 
 function Home() {
   const navigate = useNavigate();
+  const { toggle } = useWatchlist();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -71,7 +78,14 @@ function Home() {
   };
 
   const handleAddWatchlist = (item) => {
-    console.log("Watchlist:", item);
+    const contentType = CONTENT_TYPE[item?.mediaType];
+
+    if (!item?.id || !contentType) {
+      console.error("Cannot add to watchlist — missing id/mediaType:", item);
+      return;
+    }
+
+    toggle(item.id, contentType);
   };
 
   /* ==========================================
@@ -132,8 +146,6 @@ function Home() {
           title="🔥 Trending Movies"
           items={homeData.trendingMovies}
           onItemClick={handleMediaClick}
-          onPlay={handlePlay}
-          onAddWatchlist={handleAddWatchlist}
           onViewAll={() => navigate(ROUTES.MOVIES)}
         />
 
@@ -141,8 +153,6 @@ function Home() {
           title="⭐ Popular Movies"
           items={homeData.popularMovies}
           onItemClick={handleMediaClick}
-          onPlay={handlePlay}
-          onAddWatchlist={handleAddWatchlist}
           onViewAll={() => navigate(ROUTES.MOVIES)}
         />
 
@@ -150,8 +160,6 @@ function Home() {
           title="🎬 Top Rated Movies"
           items={homeData.topRatedMovies}
           onItemClick={handleMediaClick}
-          onPlay={handlePlay}
-          onAddWatchlist={handleAddWatchlist}
           onViewAll={() => navigate(ROUTES.MOVIES)}
         />
 
@@ -159,8 +167,6 @@ function Home() {
           title="📺 Trending TV Shows"
           items={homeData.trendingTv}
           onItemClick={handleMediaClick}
-          onPlay={handlePlay}
-          onAddWatchlist={handleAddWatchlist}
           onViewAll={() => navigate(ROUTES.TV_SHOWS)}
         />
 
@@ -168,8 +174,6 @@ function Home() {
           title="📺 Popular TV Shows"
           items={homeData.popularTv}
           onItemClick={handleMediaClick}
-          onPlay={handlePlay}
-          onAddWatchlist={handleAddWatchlist}
           onViewAll={() => navigate(ROUTES.TV_SHOWS)}
         />
 
@@ -177,8 +181,6 @@ function Home() {
           title="🍥 Trending Anime"
           items={homeData.trendingAnime}
           onItemClick={handleMediaClick}
-          onPlay={handlePlay}
-          onAddWatchlist={handleAddWatchlist}
           onViewAll={() => navigate(ROUTES.ANIME)}
         />
 
@@ -186,8 +188,6 @@ function Home() {
           title="🍥 Popular Anime"
           items={homeData.popularAnime}
           onItemClick={handleMediaClick}
-          onPlay={handlePlay}
-          onAddWatchlist={handleAddWatchlist}
           onViewAll={() => navigate(ROUTES.ANIME)}
         />
 
@@ -195,8 +195,6 @@ function Home() {
           title="🤖 Recommended For You"
           items={homeData.trendingMovies}
           onItemClick={handleMediaClick}
-          onPlay={handlePlay}
-          onAddWatchlist={handleAddWatchlist}
         />
 
       </div>
